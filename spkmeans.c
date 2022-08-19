@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 double l2_norm_dist(int n, const double *A, const double *B);
 double weighted_distance(int n, const double *A, const double *B);
@@ -223,7 +224,9 @@ double** create_P (int n, int i, int j, double** A, double** P_prev){
 /*
  * creates V (eigenvectors as columns) and A' (diagonal, eigenvalues of original A) 
  * */
- double*** create_jacobi_matrix (int n, double** L_norm);
+ double*** create_jacobi_matrix (int n, double** L_norm){
+     return NULL;
+ }
  /*
  * 
  V = I (create_identity);
@@ -246,7 +249,11 @@ return V and A
 /*
  * run jacobi algorithm
  * */
-double** jacobi_algorithm (int k, int n, double** L_norm);
+double** jacobi_algorithm (int k, int n, double** L_norm){
+    return L_norm;
+
+    /* complete */
+}
 /*
  * 1. call create_jacobi_matrix and compute V and A
  * 2. if k=0, calls find_eigengap and compute that required k
@@ -258,7 +265,12 @@ double** jacobi_algorithm (int k, int n, double** L_norm);
 /*
  * normalizes U and returns it
  * */
-double** create_T(int n, double** U);
+double** create_T(int n, double** U){
+    double** T = buildMatrix(n,n);
+    return T;
+
+    /* complete */
+}
 
 
 
@@ -437,21 +449,23 @@ void update_A_to_A_tag(int n, int i, int j, double**A){
 
 /*
  * find_k_max_indices
+ * K times find the next maximum from eigenvalues in A, and returns those indices
  * */
-int* find_k_max_indices(int n, int k, double** A);
-/*
-K times find the next maximum from eigenvalues in A, and returns those indices 
-*/
+int* find_k_max_indices(int n, int k, double** A){
+    int* indices= calloc(k, sizeof(int));
+    return indices;
+}
+/* complete */
+
+
 
 /*
  * creates U from V bu largest K eigenvalues
  * */
-double** create_U (int n, int k, int* indices, double** V);
+double** create_U (int n, int k, int* indices, double** V){
+    double** U = buildMatrix(n,k);
+    return U;
 
 
-/*
- * reads data from txt file into a matrix
- * */
-double** read_data(int rows, int cols, char* filePath);
-int count_cols(char* filePath);
-int count_rows(char* filePath);
+    /*complete*/
+}
