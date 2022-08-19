@@ -23,7 +23,7 @@ double** buildMatrix(int rows, int cols);
 double sum_array(int n, const double* arr);
 double** matrix_mult(int n, double **A, double **B);
 int free_matrix( int rows, double** pointer);
-double compute_off_diag(int n, const double **A);
+double compute_off_diag(int n, double **A);
 double compute_theta(double A_ij, double A_ii, double A_jj);
 double compute_t(double theta);
 double compute_c(double t);
@@ -80,8 +80,8 @@ double weighted_distance(int n, const double *A, const double *B){
  * */
 double** create_wam(int n, double** X){
     int i, j;
-    double ** W = buildMatrix(n,n);
-
+    double** W = buildMatrix(n,n);
+    assert(W==NULL);
     for(i=0; i<n; i++){
         for(j=0; j<n; j++){
             if(i==j){
@@ -381,7 +381,7 @@ int free_matrix( int rows, double** pointer){
 /*
  * computes the sum of all the off-diagonal cells in A
  * */
-double compute_off_diag(int n, const double **A){
+double compute_off_diag(int n, double **A){
     int i,j;
     double sum =0;
     for(i=0; i<n; i++){
