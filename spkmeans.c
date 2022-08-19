@@ -20,8 +20,8 @@ double** create_T(int n, double** U);
 void print_error_and_exit();
 double** buildMatrix(int rows, int cols);
 double sum_array(int n, double* arr);
-double** matrix_mult(int n, const double **A, const double **B);
-int free_matrix( int rows, double** pointer,);
+double** matrix_mult(int n, double **A, double **B);
+int free_matrix( int rows, double** pointer);
 double compute_off_diag(int n, const double **A);
 double compute_theta(double A_ij, double A_ii, double A_jj);
 double compute_t(double theta);
@@ -34,17 +34,16 @@ double** read_data(int rows, int cols, char* filePath);
 int count_cols(char* filePath);
 int count_rows(char* filePath);
 
-
-
 /*
  * L2 Norm distance of the vector A - B
  * */
 double l2_norm_dist(int n, const double *A, const double *B){
+    int i;
     double sum = 0;
-    for(int i=0; i<n; i++){
+    for(i=0; i<n; i++){
         sum += (A[i]-B[i])*(A[i]-B[i]);
     }
-    return math.sqrt(sum);
+    return sqrt(sum);
 }
 
 /*
@@ -52,7 +51,7 @@ double l2_norm_dist(int n, const double *A, const double *B){
  * */
 double weighted_distance(int n, const double *A, const double *B){
     double diff = l2_norm_dist(n,A,B);
-    return math.exp(-0.5 * diff);
+    return exp(-0.5 * diff);
 }
 
 /*
@@ -81,8 +80,9 @@ double** create_wam(int n, double** X){
  * creates identity matrix
  * */
 double** create_identity_matrix(int n){
+    int i;
     double** eye = buildMatrix(n,n);
-    for(int i=0; i<n; i++){
+    for(i=0; i<n; i++){
         eye[i][i] = 1.0;
     }
     return eye;
@@ -93,9 +93,10 @@ double** create_identity_matrix(int n){
  * uses sum_array
  * */
 double** create_ddg(int n, double** X){
+    int i;
     double** W = create_wam(n,X);
     double** D = create_identity_matrix(n);
-    for(int i=0; i<n; i++){
+    for(i=0; i<n; i++){
         D[i][i] = sum_array(n, W[i]);
     }
     free_matrix(n,W);
@@ -106,10 +107,11 @@ double** create_ddg(int n, double** X){
  * creates D^(-0.5)
  * */
 double** create_ddg_inverse(int n, double** X){
+    int i;
     double** D = create_ddg(n, X);
     double** D_inverse = create_identity_matrix(n);
-    for(int i=0; i<n; i++){
-        D_inverse[i][i] = 1 / math.sqrt(D[i][i]);
+    for(i=0; i<n; i++){
+        D_inverse[i][i] = 1 / sqrt(D[i][i]);
     }
     free_matrix(n,D);
     return D_inverse;
@@ -119,18 +121,19 @@ double** create_ddg_inverse(int n, double** X){
  * creates Normalized Graph Laplacian
  * */
 double** create_Lnorm(int n, double** X){
+    int i;
     double** D = create_ddg(n,X);
     double** D_inverse = create_ddg_inverse(n, D);
     double** W = create_wam(n,X);
-    double** temp = matrix_mult(W,D_inverse);
-    double** L_norm = matrix_mult(D_inverse, temp);
-    for(int i=0; i<n; i++){
+    double** temp = matrix_mult(n, W,D_inverse);
+    double** L_norm = matrix_mult(n, D_inverse, temp);
+    for(i=0; i<n; i++){
         L_norm[i][i] = 1-L_norm[i][i];
     }
-    free_matrix(D);
-    free_matrix(D_inverse);
-    free_matrix(W);
-    free_matrix(temp);
+    free_matrix(n,D);
+    free_matrix(n, D_inverse);
+    free_matrix(n, W);
+    free_matrix(n, temp);
     return L_norm;
 }
 
@@ -148,14 +151,15 @@ double* extract_diagonal(int n, double** A){
  * finds eigengap heuristic
  * */
 int find_eigengap(int n, double** A){
-    int limit = floor(n/2);
-    double max_val = 0;
+    int i;
     int k = 0;
+    double max_val = 0;
+    int limit = (int) floor(n/2);
     double* eigenvals = extract_diagonal(n, A);
     qsort(eigenvals,n, sizeof(double ), compare_int_reversed_order); /*inplace */
-    for(int i=0; i<limit-1; i++){
-        if(abs(eigenvals[i]-eigenvals(i+1))>max_val){
-            max_val = abs(eigenvals[i]-eigenvals(i+1));
+    for(i=0; i<limit-1; i++){
+        if(fabs(eigenvals[i]-eigenvals[i+1])>max_val){
+            max_val = fabs(eigenvals[i]-eigenvals[i+1]);
             k = i;
         }
     }
@@ -177,13 +181,15 @@ int compare_int_reversed_order(const void *p1, const void *p2){
  * */
 int* find_ij (int n, double** A){
     int a, b;
-    int[2] indices = {0,1};
-    double cur_max = math.abs(A[0][1]);
+    int* indices = calloc(2, sizeof(int));
+    indices[0] = 0;
+    indices[1] = 1;
+    double cur_max = fabs(A[0][1]);
     for(a=0; a<n; a++){
         for(b=0; b<n; b++){
             if(a!=b){
-                if(math.abs(A[a][b]) > cur_max){
-                    cur_max = math.abs(A[a][b]);
+                if(fabs(A[a][b]) > cur_max){
+                    cur_max = fabs(A[a][b]);
                     indices[0] = a;
                     indices[1] = b;
                 }
@@ -292,8 +298,9 @@ double** buildMatrix(int rows, int cols){
  * sum of array
  * */
 double sum_array(int n, double* arr){
+    int i;
     double sum = 0;
-    for(int i=0; i<n; i++){
+    for(i=0; i<n; i++){
         sum += arr[i];
     }
     return sum;
@@ -302,7 +309,7 @@ double sum_array(int n, double* arr){
 /*
  * Matrix multiplication
  * */
-double** matrix_mult(int n, const double **A, const double **B){
+double** matrix_mult(int n, double **A, double **B){
     double sum;
     int a, b, c;
     double** new_mat = buildMatrix(n,n);
@@ -321,7 +328,7 @@ double** matrix_mult(int n, const double **A, const double **B){
 /*
  * free from memory
  */
-int free_matrix( int rows, double** pointer,){
+int free_matrix( int rows, double** pointer){
     int i;
     for (i = 0; i<rows; i++){
         if (pointer[i]!=NULL){
@@ -362,7 +369,7 @@ double compute_theta(double A_ij, double A_ii, double A_jj){
  * */
 double compute_t(double theta){
     double sign = theta>=0? 1.0: -1.0;
-    double denom = math.abs(theta) + math.sqrt((theta * theta) + 1 );
+    double denom = fabs(theta) + sqrt((theta * theta) + 1 );
     return sign / denom;
 }
 
@@ -370,15 +377,16 @@ double compute_t(double theta){
  * computes c
  * */
 double compute_c(double t){
-    return 1 / (math.sqrt((t*t)+1));
+    return 1 / (sqrt((t*t)+1));
 }
 
 /*
  * recieves a matrix and returns it as identity
  * */
 void reset_matrix(int n, double**A){
-    for(int i=0; i<n; i++){
-        for(int j=0; j<n; j++){
+    int i, j;
+    for(i=0; i<n; i++){
+        for(j=0; j<n; j++){
             if(i==j){
                 A[i][j]=1.0;
             }
@@ -425,7 +433,6 @@ void update_A_to_A_tag(int n, int i, int j, double**A){
     A[i][j] = (((c * c) - (s * s)) * A[i][j]) + (s * c * (A[i][i] - A[j][j]));
     A[j][i] = (((c * c) - (s * s)) * A[i][j]) + (s * c * (A[i][i] - A[j][j]));
 
-    return A;
 }
 
 /*
