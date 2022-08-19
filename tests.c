@@ -156,15 +156,3 @@ int testM_reset_matrix(int n, double**A){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
