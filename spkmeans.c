@@ -3,16 +3,16 @@
 #include <stdio.h>
 #include <assert.h>
 
-double l2_norm_dist(int n, const double *A, const double *B);
+double l2_norm_dist(int n, double *A, double *B);
 double weighted_distance(int n, const double *A, const double *B);
-double** create_wam(int n, double** X);
+double** create_wam(int n, int d, double** X);
 double** create_identity_matrix(int n);
-double** create_ddg(int n, double** X);
-double** create_ddg_inverse(int n, double** X);
-double** create_Lnorm(int n, double** X);
+double** create_ddg(int n, int d, double** X);
+double** create_ddg_inverse(int n, int d, double** X);
+double** create_Lnorm(int n, int d, double** X);
 double* extract_diagonal(int n, double** A);
 int find_eigengap(int n, double** A);
-int compare_int_reversed_order(const void *p1, const void *p2);
+int compare_reversed_order(const void *p1, const void *p2);
 int* find_ij (int n, double** A);
 void update_P (int n, int i, int j, double** A, double** P_prev);
 double*** create_jacobi_matrix (int n, double** L_norm);
@@ -58,10 +58,11 @@ double** buildMatrix(int rows, int cols){
 
 
 /* L2 Norm distance of the vector A - B */
-double l2_norm_dist(int n, const double *A, const double *B){
+double l2_norm_dist(int n, double *A, double *B){
     int i;
     double sum = 0;
     for(i=0; i<n; i++){
+
         sum += (A[i]-B[i])*(A[i]-B[i]);
     }
     return sqrt(sum);
@@ -78,17 +79,16 @@ double weighted_distance(int n, const double *A, const double *B){
  1. build matrix nxn
  2. nested for loop - for every cell in A - compute lw_norm_dist
  * */
-double** create_wam(int n, double** X){
+double** create_wam(int n, int d, double** X){
     int i, j;
     double** W = buildMatrix(n,n);
-    assert(W==NULL);
     for(i=0; i<n; i++){
         for(j=0; j<n; j++){
             if(i==j){
                 W[i][j] = 0.0;
             }
             else{
-                W[i][j] = l2_norm_dist(n,X[i], X[j]);
+                W[i][j] = l2_norm_dist(d, X[i], X[j]);
             }
         }
     }
@@ -106,9 +106,9 @@ double** create_identity_matrix(int n){
 }
 
 /* creates Diagonal Degree Matrix, uses sum_array */
-double** create_ddg(int n, double** X){
+double** create_ddg(int n, int d, double** X){
     int i;
-    double** W = create_wam(n,X);
+    double** W = create_wam(n,d,X);
     double** D = create_identity_matrix(n);
     for(i=0; i<n; i++){
         D[i][i] = sum_array(n, W[i]);
@@ -118,9 +118,9 @@ double** create_ddg(int n, double** X){
 }
 
 /* creates D^(-0.5) */
-double** create_ddg_inverse(int n, double** X){
+double** create_ddg_inverse(int n, int d, double** X){
     int i;
-    double** D = create_ddg(n, X);
+    double** D = create_ddg(n,d, X);
     double** D_inverse = create_identity_matrix(n);
     for(i=0; i<n; i++){
         D_inverse[i][i] = 1 / sqrt(D[i][i]);
@@ -130,15 +130,21 @@ double** create_ddg_inverse(int n, double** X){
 }
 
 /* creates Normalized Graph Laplacian */
-double** create_Lnorm(int n, double** X){
-    int i;
-    double** D = create_ddg(n,X);
-    double** D_inverse = create_ddg_inverse(n, D);
-    double** W = create_wam(n,X);
+double** create_Lnorm(int n,int d, double** X){
+    int i,j;
+    double** D = create_ddg(n,d,X);
+    double** D_inverse = create_ddg_inverse(n, d, X);
+    double** W = create_wam(n,d,X);
     double** temp = matrix_mult(n, W,D_inverse);
     double** L_norm = matrix_mult(n, D_inverse, temp);
     for(i=0; i<n; i++){
-        L_norm[i][i] = 1-L_norm[i][i];
+        for (j=0; j<n; j++){
+            if (i==j){
+                L_norm[i][j] = 1-L_norm[i][j];
+            } else {
+                L_norm[i][j] = -1*L_norm[i][j];
+            }
+        }
     }
     free_matrix(n,D);
     free_matrix(n, D_inverse);
@@ -165,7 +171,7 @@ int find_eigengap(int n, double** A){
     double max_val = 0;
     int limit = (int) floor(n/2);
     double* eigenvals = extract_diagonal(n, A);
-    qsort(eigenvals,n, sizeof(double ), compare_int_reversed_order); /*inplace */
+    qsort(eigenvals,n, sizeof(double ), compare_reversed_order); /*inplace */
     for(i=0; i<limit-1; i++){
         if(fabs(eigenvals[i]-eigenvals[i+1])>max_val){
             max_val = fabs(eigenvals[i]-eigenvals[i+1]);
@@ -177,10 +183,13 @@ int find_eigengap(int n, double** A){
 }
 
 /* helper for finding eigengap */
-int compare_int_reversed_order(const void *p1, const void *p2){
+int compare_reversed_order(const void *a, const void *b){
     /* returns positive if a<b, 0 if a==b, negative if a>b*/
-    const int *q1 = p1, *q2 = p2;
-    return ((*q2)-(*q1));
+    double double_a = *((double*)a);
+    double double_b = *((double*)b);
+    if (double_a==double_b) return 0;
+    else if (double_a<double_b) return 1;
+    else return -1;
 }
 
 
