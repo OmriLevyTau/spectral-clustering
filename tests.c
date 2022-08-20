@@ -25,11 +25,24 @@ double** build_calloc_matrix(int rows, int cols, double M[rows][cols]);
 double* build_calloc_array(int n, double v[n]);
 void print_vector(double* pointer, int cols);
 int* build_calloc_int_array(int n, int v[n]);
+void run_tests();
 
-int main(){
+//int main(){
+//
+//    run_tests();
+//    return 0;
+//
+//}
+
+/*
+ * Helpers methods
+ * */
+
+void run_tests(){
+
     /*
-     * Generate Data
-     * */
+ * Generate Data
+ * */
     int n =4;
     int d =3;
     int i,j;
@@ -43,9 +56,9 @@ int main(){
                            {0.1,0.2,0.3}};
 
     double eye_temp[4][4] = {{1.0, 0.0, 0.0, 0.0},
-                        {0.0, 1.0, 0.0, 0.0},
-                        {0.0, 0.0, 1.0, 0.0},
-                        {0.0, 0.0, 0.0, 1.0}};
+                             {0.0, 1.0, 0.0, 0.0},
+                             {0.0, 0.0, 1.0, 0.0},
+                             {0.0, 0.0, 0.0, 1.0}};
 
     double W_temp[4][4] = { {0.0, 1.73205081, 0.8660254, 1.39283883},
                             {1.73205081, 0.0, 0.8660254, 3.12089731},
@@ -58,14 +71,14 @@ int main(){
                            {0.0, 0.0, 0.0, 6.76983897}};
 
     double D_inv_temp[4][4] = {{0.50056878, 0.0, 0.0, 0.0},
-                              {0.0, 0.41815853, 0.0, 0.0},
-                              {0.0, 0.0, 0.50074205, 0.0},
-                              {0.0, 0.0, 0.0, 0.38433579}};
+                               {0.0, 0.41815853, 0.0, 0.0},
+                               {0.0, 0.0, 0.50074205, 0.0},
+                               {0.0, 0.0, 0.0, 0.38433579}};
 
     double L_norm_temp[4][4] = {{1.0, -0.36254786, -0.21707432, -0.26796338},
-                               {-0.36254786, 1.0, -0.18133668, -0.50156967},
-                               {-0.21707432, -0.18133668, 1.0, -0.43419396},
-                               {-0.26796338, -0.50156967, -0.43419396, 1.0}};
+                                {-0.36254786, 1.0, -0.18133668, -0.50156967},
+                                {-0.21707432, -0.18133668, 1.0, -0.43419396},
+                                {-0.26796338, -0.50156967, -0.43419396, 1.0}};
 
     double gap1_temp[8][8] = {  {22.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0},
                                 {0.0,21.1,0.0,0.0,0.0,0.0,0.0,0.0},
@@ -142,6 +155,7 @@ int main(){
     int testK2 = testK_find_ij(n, find_ij_real2, L_norm);
     int testL1 = testL_compute_off_diag(n, 0.0, eye);
     int testL2 = testL_compute_off_diag(n, 42.54, W);
+    int testM = testM_reset_matrix(8, gap1);
 
 
     printf("A:  %d \n", testA);
@@ -164,6 +178,8 @@ int main(){
     printf("K2: %d \n",  testK2);
     printf("L1: %d \n",  testL1);
     printf("L2: %d \n",  testL2);
+    printf("M:  %d \n",  testM);
+
 
 
     free_matrix(n, X);
@@ -183,17 +199,10 @@ int main(){
     free(find_ij_real1);
     free(find_ij_real2);
 
-
-    return 0;
-
 }
 
-/*
- * Helpers methods
- * */
-
 int assert_equals(double expected, double actual){
-    if ((fabs(expected-actual))<0.00001){
+    if ((fabs(expected-actual))<0.0001){
         return 1;
     }
     return 0;
@@ -310,6 +319,7 @@ int testD2_create_identity_matrix(int n, double** expected){
 
 int testE_create_ddg(int n, int d, const double** expected, double** X){
     double** ddg = create_ddg(n, d, X);
+//    printMatrix(ddg,n, n);
     int result = assert_matrix_are_equal(n, expected, ddg);
     free_matrix(n, ddg);
     return result;
@@ -326,7 +336,7 @@ int testF_create_ddg_inverse(int n, int d, const double** expected, double** X){
 int testG_create_Lnorm(int n, int d, const double** expected, double** X){
     double** l_norm = create_Lnorm(n, d, X);
     int result = assert_matrix_are_equal(n, expected, l_norm);
-//    printMatrix(l_norm, n, n);
+    printMatrix(l_norm, n, n);
     free_matrix(n, l_norm);
     return result;
 }

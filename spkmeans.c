@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdlib.h>
+# include <string.h>
 #include <stdio.h>
 #include <assert.h>
 
@@ -33,7 +34,7 @@ void update_A_to_A_tag(int n, int i, int j, double**A);
 int* find_k_max_indices(int n, int k, double** A);
 double** create_U (int n, int k, int* indices, double** V);
 double sum_squared_array(int k, const double* arr);
-double** read_data(int rows, int cols, char* filePath);
+double** read_data_from_file(int rows, int cols, char* filePath);
 int count_cols(char* filePath);
 int count_rows(char* filePath);
 
@@ -88,7 +89,7 @@ double** create_wam(int n, int d, double** X){
                 W[i][j] = 0.0;
             }
             else{
-                W[i][j] = l2_norm_dist(d, X[i], X[j]);
+                W[i][j] = weighted_distance(d, X[i], X[j]);
             }
         }
     }
@@ -533,3 +534,105 @@ double** create_copy(int n, double** A){
     }
     return new_mat;
 }
+
+
+int count_cols(char* filePath){
+    /*
+     * input: file Name
+     * output: number of columns
+     * details: open files, reads first line of file (loops until first '\n').
+     *          counts number of ",", return counter+1 if not 0, otherwise 0.
+     */
+
+    char c;
+    int counter=0;
+    FILE *fp =  fopen(filePath,"r");
+
+    if (fp==NULL){
+        print_error_and_exit();
+    }
+
+    for (c= getc(fp); c!='\n'; c= getc(fp)){
+        if (c==','){
+            counter+=1;
+        }
+    }
+
+    if(fclose(fp)!=0){
+        print_error_and_exit();
+    }
+
+    if (counter==0){
+        return 1;
+    } else{
+        return ++counter;
+    }
+}
+
+int count_rows(char* filePath){
+    /*
+     * input: file Name
+     * output: number of lines in file
+     */
+    char c;
+    int counter=0;
+    FILE *fp =  fopen(filePath,"r");
+
+    if (fp==NULL){
+        print_error_and_exit();
+    }
+    for (c= getc(fp); c!=EOF; c= getc(fp)){
+        if (c=='\n'){
+            counter+=1;
+        }
+    }
+    if(fclose(fp)!=0){
+        print_error_and_exit();
+    }
+    return counter;
+}
+
+double** read_data_from_file(int rows, int cols, char* filePath){
+    /*
+     * Creates empty matrix and fills it with read values from file
+     */
+    double** matrix;
+    int lineSize = cols*18; /* 17 + 1 */
+    char *token; /* String pointer*/
+    int i=0,j=0;
+    char* line;
+    FILE *fp;
+
+    line = calloc(lineSize, sizeof(char ));
+    if(line == NULL){
+        print_error_and_exit();
+    }
+
+    matrix = buildMatrix(rows,cols);
+
+    fp = fopen(filePath,"r");
+
+    if (fp==NULL){
+        print_error_and_exit();
+    }
+
+    /* Reads each line as a string*/
+    while (fgets(line,lineSize,fp)!=NULL){
+        token = strtok(line,","); /* token is a string between 2 commas*/
+        while (token!=NULL){               /* in end of line token is NULL*/
+            matrix[i][j] = atof(token); /* converts the string token to double */
+            token = strtok(NULL,","); /* move forward to the next comma. Pointer=NULL so it will continue from the last place */
+            j++;
+        }
+        /* finished line*/
+        i++;
+        j=0;
+    }
+    if(fclose(fp)!=0){
+        print_error_and_exit();
+    }
+    free(line);
+
+    return matrix;
+}
+

@@ -28,6 +28,6 @@ void update_A_to_A_tag(int n, int i, int j, double**A);
 int* find_k_max_indices(int n, int k, double** A);
 double** create_U (int n, int k, int* indices, double** V);
 double sum_squared_array(int k, const double* arr);
-double** read_data(int rows, int cols, char* filePath);
+double** read_data_from_file(int rows, int cols, char* filePath);
 int count_cols(char* filePath);
 int count_rows(char* filePath);
