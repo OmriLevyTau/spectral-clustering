@@ -19,11 +19,13 @@ int testJ_sort(int n, double* expected, double* arr);
 int testK_find_ij(int n, int* expected, double** A);
 int testL_compute_off_diag(int n, double expected, const double **A);
 int testM_reset_matrix(int n, double**A);
+int testN_find_k_max_indices(int n, int k, int* expected, double**A);
 void printMatrix(double** mat, int rows, int cols);
 double** build_calloc_matrix(int rows, int cols, double M[rows][cols]);
 double* build_calloc_array(int n, double v[n]);
-void print_vector(double* pointer, int cols);
-int* build_calloc_int_array(int n, int v[n]);
+void print_int_vector(int* pointer, int cols);
+void print_double_vector(double* pointer, int cols);int* build_calloc_int_array(int n, int v[n]);
+void print_2_matrices (int n, double *** VandA);
 void run_tests();
 
 #endif //SPECTRAL_CLUSTERING_TESTS_H
