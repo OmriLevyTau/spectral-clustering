@@ -20,16 +20,32 @@ int testJ_sort(int n, double* expected, double* arr);
 int testK_find_ij(int n, int* expected, double** A);
 int testL_compute_off_diag(int n, double expected, const double **A);
 int testM_reset_matrix(int n, double**A);
+int testN_find_k_max_indices(int n, int k, int* expected, double**A);
 void printMatrix(double** mat, int rows, int cols);
 double** build_calloc_matrix(int rows, int cols, double M[rows][cols]);
 double* build_calloc_array(int n, double v[n]);
-void print_vector(double* pointer, int cols);
+void print_int_vector(int* pointer, int cols);
+void print_double_vector(double* pointer, int cols);
 int* build_calloc_int_array(int n, int v[n]);
+void print_2_matrices (int n, double *** VandA);
+void run_tests();
 
-int main(){
+//int main(){
+//
+//    run_tests();
+//    return 0;
+//
+//}
+
+/*
+ * Helpers methods
+ * */
+
+void run_tests(){
+
     /*
-     * Generate Data
-     * */
+ * Generate Data
+ * */
     int n =4;
     int d =3;
     int i,j;
@@ -43,9 +59,9 @@ int main(){
                            {0.1,0.2,0.3}};
 
     double eye_temp[4][4] = {{1.0, 0.0, 0.0, 0.0},
-                        {0.0, 1.0, 0.0, 0.0},
-                        {0.0, 0.0, 1.0, 0.0},
-                        {0.0, 0.0, 0.0, 1.0}};
+                             {0.0, 1.0, 0.0, 0.0},
+                             {0.0, 0.0, 1.0, 0.0},
+                             {0.0, 0.0, 0.0, 1.0}};
 
     double W_temp[4][4] = { {0.0, 1.73205081, 0.8660254, 1.39283883},
                             {1.73205081, 0.0, 0.8660254, 3.12089731},
@@ -58,14 +74,14 @@ int main(){
                            {0.0, 0.0, 0.0, 6.76983897}};
 
     double D_inv_temp[4][4] = {{0.50056878, 0.0, 0.0, 0.0},
-                              {0.0, 0.41815853, 0.0, 0.0},
-                              {0.0, 0.0, 0.50074205, 0.0},
-                              {0.0, 0.0, 0.0, 0.38433579}};
+                               {0.0, 0.41815853, 0.0, 0.0},
+                               {0.0, 0.0, 0.50074205, 0.0},
+                               {0.0, 0.0, 0.0, 0.38433579}};
 
     double L_norm_temp[4][4] = {{1.0, -0.36254786, -0.21707432, -0.26796338},
-                               {-0.36254786, 1.0, -0.18133668, -0.50156967},
-                               {-0.21707432, -0.18133668, 1.0, -0.43419396},
-                               {-0.26796338, -0.50156967, -0.43419396, 1.0}};
+                                {-0.36254786, 1.0, -0.18133668, -0.50156967},
+                                {-0.21707432, -0.18133668, 1.0, -0.43419396},
+                                {-0.26796338, -0.50156967, -0.43419396, 1.0}};
 
     double gap1_temp[8][8] = {  {22.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0},
                                 {0.0,21.1,0.0,0.0,0.0,0.0,0.0,0.0},
@@ -75,7 +91,7 @@ int main(){
                                 {0.0,0.0,0.0,0.0,0.0,13.0,0.0,0.0},
                                 {0.0,0.0,0.0,0.0,0.0,0.0,12.0,0.0},
                                 {0.0,0.0,0.0,0.0,0.0,0.0,0.0,11.0}};
-//    {22.1, 21.1, 15.6, 15.0, 14.0, 13.0, 12.0, 11.0};
+//    {22.1, 21.1, 15.6, 15.0, 14.0, 13.0, 12.0, 11.0}; -> 1(+1)
 
     double gap2_temp[8][8] = {  {22.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0},
                                 {0.0,11.0,0.0,0.0,0.0,0.0,0.0,0.0},
@@ -85,6 +101,8 @@ int main(){
                                 {0.0,0.0,0.0,0.0,0.0,6.5,0.0,0.0},
                                 {0.0,0.0,0.0,0.0,0.0,0.0,6.0,0.0},
                                 {0.0,0.0,0.0,0.0,0.0,0.0,0.0,5.12}};
+    //    {22.1, 11.0, 9.0, 8.5, 7.5, 6.5, 6.00, 5.12} -> 0(+1)
+
 
     double find_ij_temp[4][4] = {{1,2,3,4},
                                  {5,6,7,8},
@@ -93,7 +111,30 @@ int main(){
     int find_ij_real1_temp[2] = {2, 3};
     int find_ij_real2_temp[2] = {1, 2};
 
-//    {22.1, 11.0, 9.0, 8.5, 7.5, 6.5, 6.00, 5.12};
+    double max_k_1_temp[8][8] = {{0.221,0.0,0.0,0.0,0.0,0.0,0.0,0.0},
+                                {0.0,21.1,0.0,0.0,0.0,0.0,0.0,0.0},
+                                {0.0,0.0,15.6,0.0,0.0,0.0,0.0,0.0},
+                                {0.0,0.0,0.0,15.0,0.0,0.0,0.0,0.0},
+                                {0.0,0.0,0.0,0.0,14.0,0.0,0.0,0.0},
+                                {0.0,0.0,0.0,0.0,0.0,13.0,0.0,0.0},
+                                {0.0,0.0,0.0,0.0,0.0,0.0,12.0,0.0},
+                                {0.0,0.0,0.0,0.0,0.0,0.0,0.0,110.0}};
+//    {0.221, 21.1, 15.6, 15.0, 14.0, 13.0, 12.0, 110.0}; -> 1(+1)
+//    k=4 -> [7, 1, 2, 3]
+    int max_k_1_temp_ans[4] = {7, 1, 2, 3};
+
+    double max_k_2_temp[8][8] = {{22.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0},
+                                {0.0,11.0,0.0,0.0,0.0,0.0,0.0,0.0},
+                                {0.0,0.0,9.0,0.0,0.0,0.0,0.0,0.0},
+                                {0.0,0.0,0.0,100,0.0,0.0,0.0,0.0},
+                                {0.0,0.0,0.0,0.0,7.5,0.0,0.0,0.0},
+                                {0.0,0.0,0.0,0.0,0.0,6.5,0.0,0.0},
+                                {0.0,0.0,0.0,0.0,0.0,0.0,6.0,0.0},
+                                {0.0,0.0,0.0,0.0,0.0,0.0,0.0,5.12}};
+    //    {22.1, 11.0, 9.0, 100, 7.5, 6.5, 6.00, 5.12} -> 0(+1)
+//        k=3 -> [3, 0, 1]
+    int max_k_2_temp_ans[3] = {3, 0, 1};
+
 
 
 
@@ -121,49 +162,64 @@ int main(){
     double** find_ij = build_calloc_matrix(4,4, find_ij_temp);
     int* find_ij_real1 = build_calloc_int_array(2, find_ij_real1_temp);
     int* find_ij_real2 = build_calloc_int_array(2, find_ij_real2_temp);
-
-    int testA = testA_sum_array(n, 10, arr1);
-    int testB1 = testB_l2_norm_dist(n, 0.0 ,arr1, arr1);
-    int testB2 = testB_l2_norm_dist(n, 1.51657508881031, arr2, arr3);
-    int testC1 = testC_weighted_distance(n, 1.0, arr1, arr1);
-    int testC2 = testC_weighted_distance(n, 0.15399599, arr1, arr2);
-    int testD2 = testD2_create_identity_matrix(n, eye);
-    int testD1 = testD1_create_wam(n, d, W, X);
-    int testE = testE_create_ddg(n, d, D, X);
-    int testF = testF_create_ddg_inverse(n, d, D_inv, X);
-    int testG = testG_create_Lnorm(n, d, L_norm, X);
-    int testH1 = testH_extract_diagonal(n, diag1, eye);
-    int testH2 = testH_extract_diagonal(n, diag2, D);
-    int testI1 = testI_find_eigengap(8, 1, gap1);
-    int testI2 = testI_find_eigengap(8, 0, gap2);
-    int testJ1 = testJ_sort(5, sorted, sort1);
-    int testJ2 = testJ_sort(5, sorted, sort2);
-    int testK1 = testK_find_ij(n, find_ij_real1, find_ij);
-    int testK2 = testK_find_ij(n, find_ij_real2, L_norm);
-    int testL1 = testL_compute_off_diag(n, 0.0, eye);
-    int testL2 = testL_compute_off_diag(n, 42.54, W);
+    double** max_k_1 = build_calloc_matrix(8,8, max_k_1_temp);
+    double** max_k_2 = build_calloc_matrix(8,8, max_k_2_temp);
+    int* max_k_1_ans = build_calloc_array(4, max_k_1_temp_ans);
+    int* max_k_2_ans = build_calloc_array(3, max_k_2_temp_ans);
 
 
-    printf("A:  %d \n", testA);
-    printf("B1: %d \n", testB1);
-    printf("B2: %d \n", testB2);
-    printf("C1: %d \n", testC1);
-    printf("C2: %d \n", testC2);
-    printf("D2: %d \n", testD2);
-    printf("D1: %d \n", testD1);
-    printf("E:  %d \n",  testE);
-    printf("F:  %d \n",  testF);
-    printf("G:  %d \n",  testG);
-    printf("H1: %d \n",  testH1);
-    printf("H2: %d \n",  testH2);
-    printf("I1: %d \n",  testI1);
-    printf("I2: %d \n",  testI2);
-    printf("J1: %d \n",  testJ1);
-    printf("J2: %d \n",  testJ2);
-    printf("K1: %d \n",  testK1);
-    printf("K2: %d \n",  testK2);
-    printf("L1: %d \n",  testL1);
-    printf("L2: %d \n",  testL2);
+
+//    int testA = testA_sum_array(n, 10, arr1);
+//    int testB1 = testB_l2_norm_dist(n, 0.0 ,arr1, arr1);
+//    int testB2 = testB_l2_norm_dist(n, 1.51657508881031, arr2, arr3);
+//    int testC1 = testC_weighted_distance(n, 1.0, arr1, arr1);
+//    int testC2 = testC_weighted_distance(n, 0.15399599, arr1, arr2);
+//    int testD2 = testD2_create_identity_matrix(n, eye);
+//    int testD1 = testD1_create_wam(n, d, W, X);
+//    int testE = testE_create_ddg(n, d, D, X);
+//    int testF = testF_create_ddg_inverse(n, d, D_inv, X);
+//    int testG = testG_create_Lnorm(n, d, L_norm, X);
+//    int testH1 = testH_extract_diagonal(n, diag1, eye);
+//    int testH2 = testH_extract_diagonal(n, diag2, D);
+//    int testI1 = testI_find_eigengap(8, 2, gap1);
+//    int testI2 = testI_find_eigengap(8, 1, gap2);
+//    int testJ1 = testJ_sort(5, sorted, sort1);
+//    int testJ2 = testJ_sort(5, sorted, sort2);
+//    int testK1 = testK_find_ij(n, find_ij_real1, find_ij);
+//    int testK2 = testK_find_ij(n, find_ij_real2, L_norm);
+//    int testL1 = testL_compute_off_diag(n, 0.0, eye);
+//    int testL2 = testL_compute_off_diag(n, 42.54, W);
+//    int testM = testM_reset_matrix(8, gap1);
+    int testN1 = testN_find_k_max_indices(8, 4, max_k_1_ans, max_k_1);
+    int testN2 = testN_find_k_max_indices(8, 3, max_k_2_ans, max_k_2);
+
+
+
+//    printf("A:  %d \n", testA);
+//    printf("B1: %d \n", testB1);
+//    printf("B2: %d \n", testB2);
+//    printf("C1: %d \n", testC1);
+//    printf("C2: %d \n", testC2);
+//    printf("D2: %d \n", testD2);
+//    printf("D1: %d \n", testD1);
+//    printf("E:  %d \n",  testE);
+//    printf("F:  %d \n",  testF);
+//    printf("G:  %d \n",  testG);
+//    printf("H1: %d \n",  testH1);
+//    printf("H2: %d \n",  testH2);
+//    printf("I1: %d \n",  testI1);
+//    printf("I2: %d \n",  testI2);
+//    printf("J1: %d \n",  testJ1);
+//    printf("J2: %d \n",  testJ2);
+//    printf("K1: %d \n",  testK1);
+//    printf("K2: %d \n",  testK2);
+//    printf("L1: %d \n",  testL1);
+//    printf("L2: %d \n",  testL2);
+//    printf("M:  %d \n",  testM);
+    printf("N1:  %d \n",  testN1);
+    printf("N2:  %d \n",  testN2);
+
+
 
 
     free_matrix(n, X);
@@ -183,17 +239,10 @@ int main(){
     free(find_ij_real1);
     free(find_ij_real2);
 
-
-    return 0;
-
 }
 
-/*
- * Helpers methods
- * */
-
 int assert_equals(double expected, double actual){
-    if ((fabs(expected-actual))<0.00001){
+    if ((fabs(expected-actual))<0.0001){
         return 1;
     }
     return 0;
@@ -217,7 +266,14 @@ int assert_matrix_are_equal(int n, double **expected, double **actual){
     return 1;
 }
 
-void print_vector(double* pointer, int cols){
+void print_int_vector(int* pointer, int cols){
+    int i;
+    for (i=0; i<cols;i++){
+        printf("  %d",pointer[i]);
+    }
+}
+
+void print_double_vector(double* pointer, int cols){
     int i;
     for (i=0; i<cols;i++){
         printf("  %.4f",pointer[i]);
@@ -228,7 +284,12 @@ void printMatrix(double** mat, int rows, int cols){
     int i,j;
     for (i=0; i<rows;i++){
         for (j=0;j<cols;j++){
-            printf("  %.4f",mat[i][j]);
+            if (mat[i][j]<0){
+                printf("   %.4f",mat[i][j]);
+            } else {
+                printf("   %.5f",mat[i][j]);
+            }
+
         }
         printf("\n");
     }
@@ -256,7 +317,7 @@ int* build_calloc_int_array(int n, int v[n]){
 
 double** build_calloc_matrix(int rows, int cols, double M[rows][cols]){
     int i,j;
-    double** X = calloc(rows, sizeof(int*));
+    double** X = calloc(rows, sizeof(double*));
 
     for (i=0; i<rows; i++){
         X[i] = calloc(cols, sizeof(double));
@@ -268,6 +329,14 @@ double** build_calloc_matrix(int rows, int cols, double M[rows][cols]){
         }
     }
     return X;
+}
+
+void print_2_matrices (int n, double *** VandA){
+    printf("V: \n");
+    printMatrix(VandA[0], n, n);
+    printf("\n");
+    printf("A: \n");
+    printMatrix(VandA[1], n, n);
 }
 
 /*
@@ -310,6 +379,7 @@ int testD2_create_identity_matrix(int n, double** expected){
 
 int testE_create_ddg(int n, int d, const double** expected, double** X){
     double** ddg = create_ddg(n, d, X);
+//    printMatrix(ddg,n, n);
     int result = assert_matrix_are_equal(n, expected, ddg);
     free_matrix(n, ddg);
     return result;
@@ -326,7 +396,7 @@ int testF_create_ddg_inverse(int n, int d, const double** expected, double** X){
 int testG_create_Lnorm(int n, int d, const double** expected, double** X){
     double** l_norm = create_Lnorm(n, d, X);
     int result = assert_matrix_are_equal(n, expected, l_norm);
-//    printMatrix(l_norm, n, n);
+    printMatrix(l_norm, n, n);
     free_matrix(n, l_norm);
     return result;
 }
@@ -371,6 +441,17 @@ int testM_reset_matrix(int n, double**A){
     free_matrix(n, eye);
     return result;
 }
+
+int testN_find_k_max_indices(int n, int k, int* expected, double**A){
+    int* indices = find_k_max_indices(n,k,A);
+    printf("\n");
+    print_int_vector(indices, k);
+    printf("\n");
+    int result = assert_array_are_equal(k, expected, indices);
+    free(indices);
+    return result;
+}
+
 
 
 
