@@ -15,6 +15,17 @@ input_9 = np.array([[1.0000,-0.6822,-0.0693],
                     [-0.6822,1.0000,-0.6822],
                     [-0.0693,-0.6822,1.0000]])
 
+jacobi_0 = np.array([[0.7482679812896987,0.9962678716348444,0.705752719530148,0.3327360839555057,0.556446876169447],
+[0.9962678716348444,0.4881966580554369,0.0015561979296321304,0.4511027753265111,0.9266007970596744],
+[0.705752719530148,0.0015561979296321304,0.7712266730402363,0.004980905673753422,0.1562223832155636],
+[0.3327360839555057,0.4511027753265111,0.004980905673753422,0.8243926884444718,0.8673296129309216],
+[0.556446876169447,0.9266007970596744,0.1562223832155636,0.8673296129309216,0.5002389308425548]])
+
+jacobi_1_T = np.array([[0.88759,-0.3808,0.25912],
+                       [0.36449,-0.7417,0.56309],
+                       [0.70286,0.70657,0.08207],
+                       [0.60753,0.01596,-0.7941],
+                       [0.27527,0.74068,0.61287]])
 
 input_11_sum = np.array([
     [1.0000, -0.0001, -0.0044, -0.0030, -0.0003, -0.2055, -0.3107, -0.0088, -0.0001, -0.1994],
@@ -27,6 +38,8 @@ input_11_sum = np.array([
     [-0.0088, -0.0001, -0.4883, -0.3597, -0.0001, -0.0093, -0.0077, 1.0000, -0.0001, -0.0111],
     [-0.0001, -0.5695, -0.0000, -0.0000, -0.5130, -0.0003, -0.0002, -0.0001, 1.0000, -0.0003],
     [-0.1994, -0.0002, -0.0049, -0.0034, -0.0007, -0.4874, -0.3498, -0.0111, -0.0003, 1.0000]])
+
+
 
 
 
@@ -91,17 +104,29 @@ def new_A(n, i, j, A):
 
     return new_A
 
+def compute_off_diag(mat, n):
+    res = 0.0;
+    for i in range(n):
+        for j in range(n):
+            if(i!=j):
+                res = res + mat[i][j]*mat[i][j];
+    return res;
 
 def create_jacobi_matrix(n, L_norm):
     V = np.eye(n)
     A = np.copy(L_norm)
     P_m = np.eye(n)
     indices = (-1, -1)
+    # epsilon = 1.0 / 100000
     for l in range(100):
+        off_A = compute_off_diag(A, n);
         i, j = find_ij(n, A)
         P_m = next_P(n, i, j, A)
         A = new_A(n, i, j, A)  # TODO
+        off_A_tag = compute_off_diag(A, n);
         V = np.matmul(V, P_m)
+        # if(off_A -off_A_tag<=epsilon):
+        #     break;
     return (V, A)
 
 
@@ -155,18 +180,22 @@ def create_Lnorm(n, X):
 
 ## ----------- run test -----------
 def run_test():
+    # L_norm = create_Lnorm(5,jacobi_0);
+    # print("Lnorm")
+    # # print(L_norm);
+    # V,A = (create_jacobi_matrix(5,jacobi_0));
+    # print(V)
+    # print()
+    # print(np.sort(A.diagonal()))
+    # print()
+    # print("Numpy Calc: ")
+    # eig_np, V_np = np.linalg.eig(jacobi_0);
+    # print(np.sort(eig_np))
+    # print()
+    # print(V_np)
 
-    V,A = (create_jacobi_matrix(3,input_9));
-    print(V)
-    print()
-    print(np.sort(A.diagonal()))
-    print()
-    print("Numpy Calc: ")
-    eig_np, V_np = np.linalg.eig(input_9);
-    print(np.sort(eig_np))
-    print()
-    print(V_np)
 
+    # print((jacobi_0_T**2).sum(axis=1)**0.5)
 
 if __name__ == '__main__':
     run_test()

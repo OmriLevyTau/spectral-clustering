@@ -1,12 +1,12 @@
 #include <math.h>
 #include <stdlib.h>
-# include <string.h>
+#include <string.h>
 #include <stdio.h>
 #include <float.h>
-#include "tests.h"
+
 
 double l2_norm_dist(int n, double *A, double *B);
-double weighted_distance(int n, const double *A, const double *B);
+double weighted_distance(int n,  double *A, double *B);
 double** create_wam(int n, int d, double** X);
 double** create_identity_matrix(int n);
 double** create_ddg(int n, int d, double** X);
@@ -22,7 +22,7 @@ double** jacobi_algorithm (int k, int n, int d, double** X);
 double** create_T(int rows, int cols, double** U);
 void print_error_and_exit();
 double** buildMatrix(int rows, int cols);
-double sum_array(int n, const double* arr);
+double sum_array(int n, double* arr);
 double** matrix_mult(int n, double **A, double **B);
 int free_matrix( int rows, double** pointer);
 double compute_off_diag(int n, double **A);
@@ -34,12 +34,14 @@ double** create_copy(int n, double** A);
 void update_A_to_A_tag(int n, int i, int j, double**A_temp);
 int* find_k_max_indices(int n, int k, double** A);
 double** create_U (int n, int k, int* indices, double** V);
-double sum_squared_array(int k, double* arr);
+void spk_helper(int k, int n, int d, double** X, char* input_file);
+void spk(int k, char* input_file);
 double** read_data_from_file(int rows, int cols, char* filePath);
 int count_cols(char* filePath);
 int count_rows(char* filePath);
-//double*** create_jacobi_TEST(int n, double** L_norm);
 double sign(double x);
+FILE* write_output(char* output_filename, int rows, int cols,double** Matrix);
+
 
 
 /* build new matrix */
@@ -51,7 +53,7 @@ double** buildMatrix(int rows, int cols){
         print_error_and_exit();
     }
     for (i=0;i<rows;i++){
-        a[i] = calloc(cols, sizeof(double));
+        a[i] = calloc(cols, sizeof(double)+8);
         if (a[i]==NULL){
             print_error_and_exit();
         }
@@ -72,7 +74,7 @@ double l2_norm_dist(int n, double *A, double *B){
 }
 
 /* calculates the weighted distance between points A and B */
-double weighted_distance(int n, const double *A, const double *B){
+double weighted_distance(int n,  double *A,  double *B){
     double diff = l2_norm_dist(n,A,B);
     return exp(-0.5 * diff);
 }
@@ -253,67 +255,41 @@ void update_P (int n, int i, int j, double** A, double** P_prev){
     7. if(off(A)^2-off(A')^2<=eps){ break;}
  }
  now V holds eigenvectors and A holds eigenvalues
- free(temp);
  return V and A
  * */
-// double*** create_jacobi_matrix (int n, int d, double** X){
-//     double*** VandA = calloc(2, sizeof(double**));
-//     double** L_norm = create_Lnorm(n, d, X);
-//
-//     double** V = create_identity_matrix(n);
-//     double** A = create_copy(n,L_norm);
-//     double** P_m = create_identity_matrix(n);
-//     double** temp;
-//     double epsilon = 1.0 / 100000;
-//     int m;
-//     int i = -1;
-//     int j = -1;
-//     double off_A, off_A_tag;
-//     int* arr_ij;
-//     for(m=0; m<100; m++){
-//         arr_ij = find_ij(n, A);
-//         i = arr_ij[0];
-//         j = arr_ij[1];
-//         update_P(n, i, j, A, P_m);
-//         off_A = compute_off_diag(n,A);
-//         update_A_to_A_tag(n,i,j,A); /*now A is A'*/
-//         off_A_tag = compute_off_diag(n,A);
-//         temp = V;
-//         V = matrix_mult(n, V, P_m);
-//         free_matrix(n,temp);
-////         if(((off_A*off_A)-(off_A_tag*off_A_tag))<=epsilon){ break;}
-//     }
-//     VandA[0] = V;
-//     VandA[1] = A;
-//     free_matrix(n,P_m);
-////     free_matrix(n,temp);
-//     return VandA;
-// }
-
 
  double*** create_jacobi_matrix(int n, double** L_norm){
+     double** temp_V;
+     int* temp_indices;
      double*** VandA = calloc(2, sizeof(double**));
      double** V = create_identity_matrix(n);
      double** A = create_copy(n,L_norm);
      double** P_m = create_identity_matrix(n);
      double off_A, off_A_tag;
-     double epsilon = 1.0 / 100000000.0;
-     int* indices = {-1, -1};
+     double epsilon = 1.0 / 100000.0;
+//     int* indices = calloc(2, sizeof (int));
+//     indices[0] = -1;
+//     indices[1] = -1;
+    int* indices;
      int l, i, j;
      for(l=0; l<100; l++){
          indices = find_ij(n,A);
+         temp_indices = indices;
          i = indices[0];
          j = indices[1];
+         free(temp_indices);
          off_A = compute_off_diag(n,A);
          update_P(n, i, j, A, P_m);
          update_A_to_A_tag(n,i,j,A);
          off_A_tag = compute_off_diag(n,A);
+         temp_V = V;
          V = matrix_mult(n,V,P_m);
-         if(((off_A*off_A)-(off_A_tag*off_A_tag))<=epsilon){ break;}
+         free_matrix(n,temp_V);
+         if((off_A-off_A_tag)<=epsilon){ break;}
      }
      VandA[0] = V;
      VandA[1] = A;
-//     free_matrix(n,P_m);
+     free_matrix(n,P_m);
      return VandA;
  }
 
@@ -327,10 +303,12 @@ void update_P (int n, int i, int j, double** A, double** P_prev){
 double** jacobi_algorithm (int k, int n, int d, double** X){
     int* indices;
     double** U;
-    double*** VandA = create_jacobi_matrix(n, create_Lnorm(n,d,X));
+    double** T;
+    double** L_norm = create_Lnorm(n,d,X);
+    double*** VandA = create_jacobi_matrix(n, L_norm);
     double** V = VandA[0];
     double** A = VandA[1];
-    /**/
+    /*
     printf("V: \n");
     printMatrix(V, n, n);
     printf("\n");
@@ -338,32 +316,60 @@ double** jacobi_algorithm (int k, int n, int d, double** X){
     double* eigen = extract_diagonal(n, A);
     print_double_vector(eigen, n);
     printf("\n");
-    /**/
+     */
+
     if(k==0){
         k = find_eigengap(n,A);
     }
     indices = find_k_max_indices(n,k,A);
     U = create_U(n,k,indices,V);
+//    printf("U:");
+//    printMatrix(U,n,k);
+    free(VandA);
+    T = create_T(n,k,U);
     free_matrix(n,V);
     free_matrix(n,A);
-    free(VandA);
-    return U;
+    free_matrix(n,U);
+    free_matrix(n,L_norm);
+    free(indices);
+
+    return T;
 }
 
 
 /* normalizes U and returns it */
 double** create_T(int rows, int cols, double** U){
     int i,j;
-    double cur_row_sum=0.0;
+    double cur_row_sum, sqrt_row_sum;
     double** T = buildMatrix(rows,cols);
     for(i=0; i<rows; i++){
-        cur_row_sum= sqrt(sum_squared_array(cols,U[i]));
+        cur_row_sum = 0.0;
+        for (j=0; j<cols; j++){
+            cur_row_sum += U[i][j]*U[i][j];
+        }
+        sqrt_row_sum = sqrt(cur_row_sum);
         for(j=0;j<cols;j++){
-            T[i][j] = U[i][j] / cur_row_sum;
+            T[i][j] = U[i][j] / sqrt_row_sum;
         }
     }
     return T;
 }
+
+void spk_helper(int k, int n, int d, double** X, char* input_file){
+    double** T = jacobi_algorithm(k, n, d, X);
+    write_output("tmp_T.txt", n, d, T);
+    free_matrix(n, T);
+
+}
+
+void spk(int k, char* input_file){
+    int n = count_rows(input_file);
+    int d = count_cols(input_file);
+    double** X = read_data_from_file(n, d, input_file);
+    spk_helper(k, n, d, X, input_file);
+    free_matrix(n, X);
+}
+
 
 
 
@@ -379,7 +385,7 @@ void print_error_and_exit(){
 
 
 /* sum of array */
-double sum_array(int n, const double* arr){
+double sum_array(int n,  double* arr){
     int i;
     double sum = 0.0;
     for(i=0; i<n; i++){
@@ -658,7 +664,7 @@ double** read_data_from_file(int rows, int cols, char* filePath){
      * Creates empty matrix and fills it with read values from file
      */
     double** matrix;
-    int lineSize = cols*18; /* 17 + 1 */
+    int lineSize = cols*32; /* 17 + 1 */
     char *token; /* String pointer*/
     int i=0,j=0;
     char* line;
@@ -697,3 +703,37 @@ double** read_data_from_file(int rows, int cols, char* filePath){
     return matrix;
 }
 
+FILE* write_output(char* output_filename, int rows, int cols,double** Matrix){
+    int r,c;
+    char tmp_str[180];
+    FILE* fp;
+    fp = fopen(output_filename, "w");
+
+    if (fp==NULL){
+        print_error_and_exit();
+    }
+    for (r=0;r<rows;r++){
+        c = 0;
+        for (;c<cols-1;c++){
+            sprintf(tmp_str,"%.4f",Matrix[r][c]) ; /* saves centroids[r][c] in tmp_str */
+            fputs(tmp_str,fp);
+            fputs(",",fp);
+        }
+        sprintf(tmp_str,"%.4f",Matrix[r][c]) ;
+        fputs(tmp_str,fp);
+        fputs("\n", fp);
+    }
+    if(fclose(fp)!=0){
+        print_error_and_exit();
+    }
+    return fp;
+}
+
+/*
+int main(){
+    char* input_file = "jacobi_1.txt";
+    int k = 3;
+    spk(k, input_file);
+    return 0;
+}
+*/

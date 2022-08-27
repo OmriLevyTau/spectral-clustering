@@ -7,18 +7,18 @@ int assert_array_are_equal(int n, double *expected, double *actual);
 int assert_matrix_are_equal(int n, double **expected, double **actual);
 int assert_equals(double expected, double actual);
 int testA_sum_array(int n, double expected, double* arr);
-int testB_l2_norm_dist(int n, double expected, const double *A, const double *B);
-int testC_weighted_distance(int n, double expected, const double *A, const double *B);
+int testB_l2_norm_dist(int n, double expected,  double *A,  double *B);
+int testC_weighted_distance(int n, double expected,  double *A,  double *B);
 int testD1_create_wam(int n, int d, double** expected, double** X);
 int testD2_create_identity_matrix(int n, double** expected);
-int testE_create_ddg(int n, int d, const double** expected, double** X);
-int testF_create_ddg_inverse(int n, int d, const double** expected, double** X);
-int testG_create_Lnorm(int n, int d, const double** expected, double** X);
-int testH_extract_diagonal(int n, const double* expected, double** A);
+int testE_create_ddg(int n, int d,  double** expected, double** X);
+int testF_create_ddg_inverse(int n, int d,  double** expected, double** X);
+int testG_create_Lnorm(int n, int d,  double** expected, double** X);
+int testH_extract_diagonal(int n,  double* expected, double** A);
 int testI_find_eigengap(int n, int expected, double** A);
 int testJ_sort(int n, double* expected, double* arr);
 int testK_find_ij(int n, int* expected, double** A);
-int testL_compute_off_diag(int n, double expected, const double **A);
+int testL_compute_off_diag(int n, double expected, double **A);
 int testM_reset_matrix(int n, double**A);
 int testN_find_k_max_indices(int n, int k, int* expected, double**A);
 void printMatrix(double** mat, int rows, int cols);
@@ -352,12 +352,12 @@ int testA_sum_array(int n, double expected, double* arr){
     return assert_equals(expected, sum);
 }
 
-int testB_l2_norm_dist(int n, double expected, const double *A, const double *B){
+int testB_l2_norm_dist(int n, double expected,  double *A,  double *B){
     double norm = l2_norm_dist(n, A, B);
     return assert_equals(expected, norm);
 }
 
-int testC_weighted_distance(int n, double expected, const double *A, const double *B){
+int testC_weighted_distance(int n, double expected,  double *A,  double *B){
     double weight = weighted_distance(n, A, B);
     return assert_equals(expected, weight);
 }
@@ -377,7 +377,7 @@ int testD2_create_identity_matrix(int n, double** expected){
     return result;
 }
 
-int testE_create_ddg(int n, int d, const double** expected, double** X){
+int testE_create_ddg(int n, int d,  double** expected, double** X){
     double** ddg = create_ddg(n, d, X);
 //    printMatrix(ddg,n, n);
     int result = assert_matrix_are_equal(n, expected, ddg);
@@ -385,7 +385,7 @@ int testE_create_ddg(int n, int d, const double** expected, double** X){
     return result;
 }
 
-int testF_create_ddg_inverse(int n, int d, const double** expected, double** X){
+int testF_create_ddg_inverse(int n, int d,  double** expected, double** X){
     double** ddg_inv = create_ddg_inverse(n, d, X);
     int result = assert_matrix_are_equal(n, expected, ddg_inv);
     free_matrix(n, ddg_inv);
@@ -393,7 +393,7 @@ int testF_create_ddg_inverse(int n, int d, const double** expected, double** X){
 }
 
 
-int testG_create_Lnorm(int n, int d, const double** expected, double** X){
+int testG_create_Lnorm(int n, int d,  double** expected, double** X){
     double** l_norm = create_Lnorm(n, d, X);
     int result = assert_matrix_are_equal(n, expected, l_norm);
     printMatrix(l_norm, n, n);
@@ -401,7 +401,7 @@ int testG_create_Lnorm(int n, int d, const double** expected, double** X){
     return result;
 }
 
-int testH_extract_diagonal(int n, const double* expected, double** A){
+int testH_extract_diagonal(int n,  double* expected, double** A){
     double* diag = extract_diagonal(n, A);
 //    print_vector(diag, n); printf("\n");
     int result = assert_array_are_equal(n, expected, diag);
@@ -428,7 +428,7 @@ int testK_find_ij(int n, int* expected, double** A){
     return result;
 }
 
-int testL_compute_off_diag(int n, double expected, const double **A){
+int testL_compute_off_diag(int n, double expected,  double **A){
     double off = compute_off_diag(n, A);
 //    printf("%f \n", off);
     return assert_equals(expected, off);

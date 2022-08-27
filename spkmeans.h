@@ -1,5 +1,5 @@
 double l2_norm_dist(int n, double *A, double *B);
-double weighted_distance(int n, const double *A, const double *B);
+double weighted_distance(int n,  double *A, double *B);
 double** create_wam(int n, int d, double** X);
 double** create_identity_matrix(int n);
 double** create_ddg(int n, int d, double** X);
@@ -15,7 +15,7 @@ double** jacobi_algorithm (int k, int n, int d, double** X);
 double** create_T(int rows, int cols, double** U);
 void print_error_and_exit();
 double** buildMatrix(int rows, int cols);
-double sum_array(int n, const double* arr);
+double sum_array(int n, double* arr);
 double** matrix_mult(int n, double **A, double **B);
 int free_matrix( int rows, double** pointer);
 double compute_off_diag(int n, double **A);
@@ -27,10 +27,13 @@ double** create_copy(int n, double** A);
 void update_A_to_A_tag(int n, int i, int j, double**A_temp);
 int* find_k_max_indices(int n, int k, double** A);
 double** create_U (int n, int k, int* indices, double** V);
-double sum_squared_array(int k, double* arr);
+void spk_helper(int k, int n, int d, double** X, char* input_file);
+void spk(int k, char* input_file);
 double** read_data_from_file(int rows, int cols, char* filePath);
 int count_cols(char* filePath);
 int count_rows(char* filePath);
 //double*** create_jacobi_TEST(int n, double** L_norm);
 double sign(double x);
+FILE* write_output(char* output_filename, int rows, int cols,double** Matrix);
+
 
