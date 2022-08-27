@@ -11,6 +11,11 @@ input_1_sym = np.array([[ 1.      , -0.01021 , -0.001042, -0.999721],
                        [-0.001042, -0.26966 ,  1.      , -0.000928],
                        [-0.999721, -0.011936, -0.000928,  1.      ]])
 
+input_9 = np.array([[1.0000,-0.6822,-0.0693],
+                    [-0.6822,1.0000,-0.6822],
+                    [-0.0693,-0.6822,1.0000]])
+
+
 input_11_sum = np.array([
     [1.0000, -0.0001, -0.0044, -0.0030, -0.0003, -0.2055, -0.3107, -0.0088, -0.0001, -0.1994],
     [-0.0001, 1.0000, -0.0000, -0.0000, -0.4105, -0.0002, -0.0002, -0.0001, -0.5695, -0.0002],
@@ -145,77 +150,19 @@ def create_Lnorm(n, X):
     return I - (D_inv@(W@D_inv))
 
 
-def next_P(n, i, j, A):
-    theta = (A[j][j] - A[i][i]) / (2 * A[i][j])  # Replace with sin
-    t = np.sign(theta) / (np.abs(theta) + ((theta ** 2) + 1) ** 0.5)
-    c = 1 / ((t ** 2) + 1) ** 0.5
-    s = t * c
 
-    new_P = np.eye(n)
-
-    new_P[i][i] = c;
-    new_P[j][j] = c;
-    new_P[i][j] = s;
-    new_P[j][i] = -1 * s;
-    return new_P
-
-
-def new_A(n, i, j, A):
-    theta = (A[j][j] - A[i][i]) / (2 * A[i][j])  # Replace with sin
-    t = np.sign(theta) / (np.abs(theta) + ((theta ** 2) + 1) ** 0.5)
-    c = 1 / ((t ** 2) + 1) ** 0.5
-    s = t * c
-    new_A = np.copy(A)
-
-    new_A[i] = c * A[i] - s * A[j]
-    new_A[j] = s * A[i] + c * A[j]
-    new_A[:][i] = c * A[i] - s * A[j]
-    new_A[:][j] = s * A[i] + c * A[j]
-
-    new_A[i][i] = (c * c * A[i][i]) - (2 * s * c * A[i][j]) + (s * s * A[j][j])
-    new_A[j][j] = (s * s * A[i][i]) + (2 * s * c * A[i][j]) + (c * c * A[j][j])
-    new_A[i][j] = (((c * c) - (s * s)) * A[i][j]) + (s * c * (A[i][i] - A[j][j]))
-    new_A[j][i] = (((c * c) - (s * s)) * A[i][j]) + (s * c * (A[i][i] - A[j][j]))
-
-    return new_A
-
-
-def create_jacobi_matrix(n, L_norm):
-    V = np.eye(n)
-    A = np.copy(L_norm)
-    P_m = np.eye(n)
-    indices = (-1, -1)
-    for l in range(100):
-        i, j = np.unravel_index(A.argmax(), A.shape)
-        P_m = next_P(n, i, j, A)
-        A = new_A(n, i, j, A)  # TODO
-        V = V @ P_m
-    return (V, A)
-
-
-def find_ij(n,M):
-    indices = [-1, -1]
-    cur_max = -1*np.inf
-    for i in range(n):
-        for j in range(n):
-            if (i!=j):
-                if M[i][j]>cur_max:
-                    cur_max=M[i][j]
-                    indices[0]=i
-                    indices[1]=j
-    return indices
 
 
 ## ----------- run test -----------
 def run_test():
 
-    V,A = (create_jacobi_matrix(4, input_1_sym))
+    V,A = (create_jacobi_matrix(3,input_9));
     print(V)
     print()
     print(np.sort(A.diagonal()))
     print()
     print("Numpy Calc: ")
-    eig_np, V_np = np.linalg.eig(input_1_sym)
+    eig_np, V_np = np.linalg.eig(input_9);
     print(np.sort(eig_np))
     print()
     print(V_np)

@@ -108,7 +108,7 @@ void test4_create_jacobi(){
     printMatrix(L_norm, n_input, n_input);
     printf("\n");
 
-    double*** VandA = create_jacobi_TEST(n_input, L_norm);
+    double*** VandA = create_jacobi_matrix(n_input, L_norm);
     double* eig = extract_diagonal(n_input, VandA[1]);
     print_2_matrices(n_input, VandA);
     printf("\n");
@@ -117,23 +117,25 @@ void test4_create_jacobi(){
 
 
 void test5_create_U(){
-
-    int n_input = count_rows("C:\\Users\\Omri\\Desktop\\spectral-clustering\\test_files\\inputs\\data_points\\input_1.txt");
-    int d_input = count_cols("C:\\Users\\Omri\\Desktop\\spectral-clustering\\test_files\\inputs\\data_points\\input_1.txt");
-    double** X = read_data_from_file(n_input, d_input, "C:\\Users\\Omri\\Desktop\\spectral-clustering\\test_files\\inputs\\data_points\\input_1.txt");
+    int n_input = count_rows("C:\\Users\\idani\\SW_PROJ_FINAL\\test_files\\inputs\\sym_matrix\\sym_matrix_input_9.txt");
+    int d_input = count_cols("C:\\Users\\idani\\SW_PROJ_FINAL\\test_files\\inputs\\sym_matrix\\sym_matrix_input_9.txt");
+    double** X = read_data_from_file(n_input, d_input, "C:\\Users\\idani\\SW_PROJ_FINAL\\test_files\\inputs\\sym_matrix\\sym_matrix_input_9.txt");
 
     printf("X: \n");
     printMatrix(X, n_input, d_input);
     printf("\n");
 
     printf("\n");
-    double** U = jacobi_algorithm(4, n_input, d_input, X);
-    printf("U: \n");
-    printMatrix(U, n_input, 4);
+    double** V = create_jacobi_matrix(n_input, X)[0];
+    printf("V: \n");
+    printMatrix(V, n_input, d_input);
     printf("\n");
-    double** T = create_T(n_input, 4, U);
-    printf("T: \n");
-    printMatrix(T, n_input, 4);
+    double** A = create_jacobi_matrix(n_input, X)[1];
+    printf("A: \n");
+    printMatrix(A, n_input, d_input);
+//    double** T = create_T(n_input, 4, U);
+//    printf("T: \n");
+//    printMatrix(T, n_input, 4);
 
 
 }

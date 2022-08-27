@@ -10,7 +10,7 @@ int find_eigengap(int n, double** A);
 int compare_reversed_order(const void *z, const void *b);
 int* find_ij (int n, double** A);
 void update_P (int n, int i, int j, double** A, double** P_prev);
-double*** create_jacobi_matrix (int n, int d, double** X);
+double*** create_jacobi_matrix (int n, double** L_norm);
 double** jacobi_algorithm (int k, int n, int d, double** X);
 double** create_T(int rows, int cols, double** U);
 void print_error_and_exit();
@@ -31,6 +31,6 @@ double sum_squared_array(int k, double* arr);
 double** read_data_from_file(int rows, int cols, char* filePath);
 int count_cols(char* filePath);
 int count_rows(char* filePath);
-double*** create_jacobi_TEST(int n, double** L_norm);
+//double*** create_jacobi_TEST(int n, double** L_norm);
 double sign(double x);
 
