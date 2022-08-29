@@ -10,7 +10,7 @@ int test2_create_ddg();
 int test3_create_l_norm();
 void test4_create_jacobi();
 void test5_create_U();
-void test_Memory();
+void test_spk_Memory();
 
 
 int main(){
@@ -25,10 +25,11 @@ int main(){
 //
 //    test4_create_jacobi();
 
-    test5_create_U();
+//    test5_create_U();
 
-//    test_Memory();
+//    test_spk_Memory();
 
+    test_Wam_Memory();
     return 0;
 
 }
@@ -117,7 +118,7 @@ void test4_create_jacobi(){
     print_double_vector(eig, n_input);
 }
 
-*/
+
 void test5_create_U(){
     int n_input = count_rows("C:\\Users\\idani\\SW_PROJ_FINAL\\test_files\\project_comprehensive_test\\testfiles\\jacobi_1.txt");
     int d_input = count_cols("C:\\Users\\idani\\SW_PROJ_FINAL\\test_files\\project_comprehensive_test\\testfiles\\jacobi_1.txt");
@@ -140,7 +141,7 @@ void test5_create_U(){
     printMatrix(T,n_input,3);
 }
 /*
-void test_Memory(){
+void test_spk_Memory(){
 
     char* input_file = "C:\\Users\\idani\\SW_PROJ_FINAL\\test_files\\project_comprehensive_test\\testfiles\\jacobi_1.txt";
 
@@ -149,3 +150,4 @@ void test_Memory(){
     spk(k, input_file);
 }
  */
+

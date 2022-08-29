@@ -65,7 +65,7 @@ double** buildMatrix(int rows, int cols){
 /* L2 Norm distance of the vector A - B */
 double l2_norm_dist(int n, double *A, double *B){
     int i;
-    double sum = 0;
+    double sum = 0.0;
     for(i=0; i<n; i++){
 
         sum = sum + ((A[i]-B[i])*(A[i]-B[i]));
@@ -729,11 +729,38 @@ FILE* write_output(char* output_filename, int rows, int cols,double** Matrix){
     return fp;
 }
 
-/*
+
 int main(){
+
+    /* test spk memory */
+//    char* input_file = "jacobi_1.txt";
+//    int k = 3;
+//    spk(k, input_file);
+
     char* input_file = "jacobi_1.txt";
-    int k = 3;
-    spk(k, input_file);
+    int n = count_rows(input_file);
+    int d = count_cols(input_file);
+    double** X = read_data_from_file(n,d,input_file);
+
+    /* check create_Wam */
+//    double** W = create_wam(n,d, X);
+//    free_matrix(n,W);
+
+    /* check create_Ddg */
+//    double** D = create_ddg(n,d,X);
+//    free_matrix(n,D);
+
+    /* check create_Ddg_inverse */
+//    double** D_inverse = create_ddg_inverse(n,d,X);
+//    free_matrix(n,D_inverse);
+
+    /* check create_Lnorm */
+//    double** L_norm = create_Lnorm(n,d,X);
+//    free_matrix(n,L_norm);
+
+
+    free_matrix(n,X);
+
     return 0;
+
 }
-*/
