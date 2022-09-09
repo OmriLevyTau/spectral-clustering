@@ -1,4 +1,4 @@
-# Compile and Run #
+# C - compile and run #
 
 ## compile and run with user input ##
 
@@ -26,3 +26,9 @@ Alternatively, using the command line:
 3. execute file:
    1. `./run.exe`
 
+
+# python - run #
+1. a
+2. b
+3. c
+4. 
