@@ -102,11 +102,9 @@ def main():
         X = read_data(input_file)
 
         if goal=="spk":
-            # compute wam from X
-            # compute lnorm from X
-            # Determine k and obtain the largest k eigenvectors of lnorm matrix
-            # create U, then create T (// TODO: can use python?)
-            # treat T as the input data points, call kmeans++ algorithm:
+            # call the c function: "jacobi_algorithm(int k, int n, int d, double** X)"
+            # that will calculate T and write it to a temporary file in directory
+            # Use kmeans++ algorithm from HW2 and call it on the temporary file:
                 # get initial centroids out of T
                 # write this output to a temporary file and get its path
                 # call kmeans.c algortihm using c interface
