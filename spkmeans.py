@@ -3,8 +3,9 @@ import os.path
 import sys
 import numpy as np
 import pandas as pd
+# import spkmeansmodule
+# import mykmeanssp
 from typing import List
-
 np.random.seed(0)
 
 goals_list = ["spk", "wam", "ddg", "lnorm", "jacobi"]
@@ -77,9 +78,10 @@ def make_string(centroid: List['float']):
         st = st + tmp + ","
     return st[:len(st) - 1]
 
-def clear_tmp_files():
-    if os.path.exists("tmp_initial_centroids.txt"):
-        os.remove("tmp_initial_centroids.txt")
+def clear_tmp_files(files_list):
+    for file in files_list:
+        if os.path.exists(file):
+            os.remove(file)
 
 def print_output(centroids,initial_centroids_indices):
     st = ""
@@ -88,6 +90,11 @@ def print_output(centroids,initial_centroids_indices):
     result = ','.join(str(ind) for ind in initial_centroids_indices)
     print(result + "\n" + st);
 
+def print_matrix(matrix):
+    st = ""
+    for row in matrix:
+        st += make_string(row) + "\n";
+    print(st);
 
 def main():
     argv = sys.argv
@@ -100,37 +107,41 @@ def main():
     try:
         k, goal, input_file = argv[1], argv[2], argv[3]
         X = read_data(input_file)
+        n,d = X.shape[0], X.shape[1]
 
         if goal=="spk":
-            # call the c function: "jacobi_algorithm(int k, int n, int d, double** X)"
-            # that will calculate T and write it to a temporary file in directory
-            # Use kmeans++ algorithm from HW2 and call it on the temporary file:
-                # get initial centroids out of T
-                # write this output to a temporary file and get its path
-                # call kmeans.c algortihm using c interface
-            # print:
-                # first line are the indices of the initial centroids chosen
-                # second line onward are the final centroids
-
+            # spkmeansmodule.jacobi_algorithm (n, d, input_file)
+                # calculates T and writes to temp file
+            # T_path = os.path.join(os.getcwd(), "tmp_T" + "." + "txt")
+            # X = read_data(T_path)
+            # k = X.shape[1]
+                # if k==0 is re-calculated in jacobi_algorithm, now I got it in my hand again.
+            # initial_centroids, initial_centroids_indices = initialize_centroids(X.tolist(), k)
+            # write_output(initial_centroids.tolist(), "tmp_initial_centroids.txt")
+                # calculates initial centroids and write to a temp file
+            # initial_path = os.path.join(os.getcwd(), "tmp_initial_centroids" + "." + "txt")
+            # centroids = mykmeanssp.fit(k, max_iter, eps, combined_path, initial_path)
+                # execute kmeans
+            # clear_tmp_files(["tmp_T.txt", "tmp_initial_centroids.txt"])
+            # print_output(centroids, initial_centroids_indices)
             pass
 
         elif goal=="wam":
-            # compute wam from X using C module
-            # print wam
+            # W = spkmeansmodule.create_wam_api(n, d, input_file)
+            # print_matrix(W)
             pass
         elif goal=="ddg":
-            # compute ddg from X using C module
-            # print ddg
+            # D = spkmeansmodule.create_ddg_api(n, d, input_file)
+            # print_matrix(D)
             pass
         elif goal=="lnorm":
-            # compute lnorm from X using C module
-            # print lnorm
+            # lnorm = spkmeansmodule.create_lnorm_api(n, d, input_file)
+            # print_matrix(lnorm)
             pass
         elif goal=="jacobi":
-            # compute jacobi from X using C module
-            # print:
-                # first line are the eigenvalues
-                # then eigenvectors as columns
+            # jacobi = spkmeansmodule.create_jacobi_api(n, d, input_file)
+            # (returns the result ready tp print!)
+            # print_matrix(jacobi)
             pass
         else:
             print("Invalid Input!") #should not happen
