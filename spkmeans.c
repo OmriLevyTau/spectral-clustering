@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <float.h>
 
-
 double l2_norm_dist(int n, double *A, double *B);
 double weighted_distance(int n,  double *A, double *B);
 double** create_wam(int n, int d, double** X);
@@ -43,6 +42,8 @@ double sign(double x);
 FILE* write_output(char* output_filename, int rows, int cols,double** Matrix);
 int validateInputFile(char* filePath);
 int validate_input_args(int argc, char* argv[]);
+void print_double_vector(double* pointer, int cols);
+void printMatrix(double** mat, int rows, int cols);
 
 
 
@@ -723,6 +724,24 @@ FILE* write_output(char* output_filename, int rows, int cols,double** Matrix){
     return fp;
 }
 
+void print_double_vector(double* pointer, int cols){
+    int i;
+    for (i=0; i<cols;i++){
+        printf("  %.4f",pointer[i]);
+    }
+}
+
+void printMatrix(double** mat, int rows, int cols){
+    int i,j;
+    for (i=0; i<rows;i++){
+        for (j=0;j<cols;j++){
+            printf("   %.4f",mat[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+
 int validateInputFile(char* filePath){
     /*
      * input: file Name
@@ -750,7 +769,7 @@ int validate_input_args(int argc, char* argv[]){
     /* char* input_file_path; */
     char* optional_commands[] = {"wam", "ddg", "lnorm", "jacobi"};
 
-    if (argc!=3){ return 1; }
+    if (argc!=3){ return -1; }
 
     required_command = argv[1];
     /* input_file_path = argv[2]; */
@@ -759,14 +778,14 @@ int validate_input_args(int argc, char* argv[]){
      * No need to check, as mentions in the assumptions:
      * "You may assume that the input files are in the correct format."
      *
-    if (validateInputFile(input_file_path)==1){ return 1; }
+    if (validateInputFile(input_file_path)==1){ return -1; }
      */
 
     for (i=0; i<4; i++){
-        if (strcmp(required_command, optional_commands[i])==0){ return 0;}
+        if (strcmp(required_command, optional_commands[i])==0){ return i;}
     }
 
-    return 1;
+    return -1;
 }
 
 
@@ -779,7 +798,7 @@ int validate_input_args(int argc, char* argv[]){
 
 int main(int argc, char * argv[]){
 
-/* test spk memory
+    /* Idan - test spk memory
     char* input_file = "jacobi_1.txt";
     int k = 3;
     spk(k, input_file);
@@ -788,38 +807,67 @@ int main(int argc, char * argv[]){
     int n = count_rows(input_file);
     int d = count_cols(input_file);
     double** X = read_data_from_file(n,d,input_file);
- */
-
-    /*
-     * Validate user input
      */
 
-    if (validate_input_args(argc, argv)==1){
+    int required_command;
+    char* input_file_path;
+    double** result_matrix;
+    double*** VandA;
+    /*
+    char* optional_commands[] = {"wam", "ddg", "lnorm", "jacobi"};
+                                   0      1       2         3   */
+
+    /* Validate user input */
+    required_command = validate_input_args(argc, argv);
+
+    if (required_command<0){
         printf("Invalid Input!");
         return 1;
-    } else {
-        printf("Good input");
-        return 0;
     }
 
+    /* Execute the right function */
+    input_file_path = argv[2];
 
-    /* check create_Wam */
-//    double** W = create_wam(n,d, X);
-//    free_matrix(n,W);
-
-    /* check create_Ddg */
-//    double** D = create_ddg(n,d,X);
-//    free_matrix(n,D);
-
-    /* check create_Ddg_inverse */
-//    double** D_inverse = create_ddg_inverse(n,d,X);
-//    free_matrix(n,D_inverse);
-
-    /* check create_Lnorm */
-//    double** L_norm = create_Lnorm(n,d,X);
-//    free_matrix(n,L_norm);
+    int n_input = count_rows(input_file_path);
+    int d_input = count_cols(input_file_path);
+    double** X = read_data_from_file(n_input, d_input, input_file_path);
 
 
+    switch (required_command) {
+        case 0:
+            /*printf("wam \n");*/
+            result_matrix = create_wam(n_input, d_input, X);
+            break;
+        case 1:
+            /*printf("ddg \n");*/
+            result_matrix = create_ddg(n_input, d_input, X);
+            break;
+        case 2:
+            /*printf("lnorm \n");*/
+            result_matrix = create_Lnorm(n_input, d_input, X);
+            break;
+        case 3:
+            /*printf("jacobi \n");*/
+            VandA = create_jacobi_matrix(n_input,X);
+            result_matrix = VandA[0];
+            double** A = VandA[1];
+            double* eigenvalues = extract_diagonal(n_input, A);
+
+            print_double_vector(eigenvalues, n_input);
+            printf("\n");
+
+            free(eigenvalues);
+            free_matrix(n_input, A);
+            free(VandA);
+            break;
+        default:
+            printf("Invalid Input!"); /* should not happen, for clean compilation*/
+            break;
+    }
+
+    printMatrix(result_matrix, n_input, n_input);
+
+    free_matrix(n_input, result_matrix);
 
     return 0;
 

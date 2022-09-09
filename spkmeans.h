@@ -37,5 +37,7 @@ double sign(double x);
 FILE* write_output(char* output_filename, int rows, int cols,double** Matrix);
 int validateInputFile(char* filePath);
 int validate_input_args(int argc, char* argv[]);
+void print_double_vector(double* pointer, int cols);
+void printMatrix(double** mat, int rows, int cols);
 
 

@@ -2,8 +2,15 @@
 
 ## compile and run with user input ##
 
-1. `gcc -Wall -c .\spkmeans.c -o run`
+general:
+1. `gcc -Wall .\spkmeans.c -o run `
 2. `.\run.exe ddg input `
+
+specific:
+1. `gcc -Wall .\spkmeans.c -o run `
+2. `.\run.exe jacobi C:\\Users\\Omri\\Desktop\\spectral-clustering\\test_files\\inputs\\sym_matrix\\sym_matrix_input_9.txt`
+3. `.\run.exe lnorm C:\\Users\\Omri\\Desktop\\spectral-clustering\\test_files\\inputs\\data_points\\input_0.txt`
+
 
 ## connect two files - compile and run ##
 For invoking method foo() defined in spkmeans.c in test.c:

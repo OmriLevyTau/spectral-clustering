@@ -3,6 +3,5 @@ cmake-build-debug/
 .vscode
 tests_in_python.ipynb
 .ipynb_checkpoints/
-
 *.o
 *.exe
