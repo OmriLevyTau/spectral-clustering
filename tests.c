@@ -32,9 +32,7 @@ void run_tests();
 
 //int main(){
 //
-//    run_tests();
-//    return 0;
-//
+// Omri test Tower-Git config.
 //}
 
 /*
