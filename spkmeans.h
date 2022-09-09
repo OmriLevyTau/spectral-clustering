@@ -35,5 +35,7 @@ int count_rows(char* filePath);
 //double*** create_jacobi_TEST(int n, double** L_norm);
 double sign(double x);
 FILE* write_output(char* output_filename, int rows, int cols,double** Matrix);
+int validateInputFile(char* filePath);
+int validate_input_args(int argc, char* argv[]);
 
 

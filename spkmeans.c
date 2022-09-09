@@ -41,6 +41,8 @@ int count_cols(char* filePath);
 int count_rows(char* filePath);
 double sign(double x);
 FILE* write_output(char* output_filename, int rows, int cols,double** Matrix);
+int validateInputFile(char* filePath);
+int validate_input_args(int argc, char* argv[]);
 
 
 
@@ -267,9 +269,7 @@ void update_P (int n, int i, int j, double** A, double** P_prev){
      double** P_m = create_identity_matrix(n);
      double off_A, off_A_tag;
      double epsilon = 1.0 / 100000.0;
-//     int* indices = calloc(2, sizeof (int));
-//     indices[0] = -1;
-//     indices[1] = -1;
+
     int* indices;
      int l, i, j;
      for(l=0; l<100; l++){
@@ -323,8 +323,7 @@ double** jacobi_algorithm (int k, int n, int d, double** X){
     }
     indices = find_k_max_indices(n,k,A);
     U = create_U(n,k,indices,V);
-//    printf("U:");
-//    printMatrix(U,n,k);
+
     free(VandA);
     T = create_T(n,k,U);
     free_matrix(n,V);
@@ -371,10 +370,10 @@ void spk(int k, char* input_file){
 }
 
 
-
-
 /*
- ***** HELPERS METHODS ***
+ **************************
+ **** HELPERS METHODS *****
+ **************************
  * */
 
 void print_error_and_exit(){
@@ -464,12 +463,6 @@ double compute_theta(double A_ij, double A_ii, double A_jj){
  * computes t
  * */
 double compute_t(double theta){
-    double sign_top;
-    if (theta>=0){
-        sign_top = 1.0;
-     } else{
-        sign_top = -1.0;
-    }
     double denom = fabs(theta) + sqrt(theta * theta + 1 );
     return sign(theta) / denom;
 }
@@ -659,10 +652,11 @@ int count_rows(char* filePath){
     return counter;
 }
 
+/*
+ * Creates empty matrix and fills it with read values from file
+ */
 double** read_data_from_file(int rows, int cols, char* filePath){
-    /*
-     * Creates empty matrix and fills it with read values from file
-     */
+
     double** matrix;
     int lineSize = cols*32; /* 17 + 1 */
     char *token; /* String pointer*/
@@ -729,18 +723,85 @@ FILE* write_output(char* output_filename, int rows, int cols,double** Matrix){
     return fp;
 }
 
+int validateInputFile(char* filePath){
+    /*
+     * input: file Name
+     * output: number of lines in file
+     */
 
-int main(){
+    FILE *fp =  fopen(filePath,"r");
+    if (fp==NULL){
+        return 1;
+    }
+    fclose(fp);
+    return 0;
+}
 
-    /* test spk memory */
-//    char* input_file = "jacobi_1.txt";
-//    int k = 3;
-//    spk(k, input_file);
+
+int validate_input_args(int argc, char* argv[]){
+    /*
+     * Tests:
+     * 1. argc == 3 (project_name, required_command, input_file_path
+     * 2. required_command is one of 4 options
+     * 3. input_file_path points to a valid file, txt or csv (?)
+     */
+    int i;
+    char* required_command;
+    /* char* input_file_path; */
+    char* optional_commands[] = {"wam", "ddg", "lnorm", "jacobi"};
+
+    if (argc!=3){ return 1; }
+
+    required_command = argv[1];
+    /* input_file_path = argv[2]; */
+
+    /*
+     * No need to check, as mentions in the assumptions:
+     * "You may assume that the input files are in the correct format."
+     *
+    if (validateInputFile(input_file_path)==1){ return 1; }
+     */
+
+    for (i=0; i<4; i++){
+        if (strcmp(required_command, optional_commands[i])==0){ return 0;}
+    }
+
+    return 1;
+}
+
+
+
+/*
+ ***********************
+ **** Main Function ****
+ ***********************
+ */
+
+int main(int argc, char * argv[]){
+
+/* test spk memory
+    char* input_file = "jacobi_1.txt";
+    int k = 3;
+    spk(k, input_file);
 
     char* input_file = "jacobi_1.txt";
     int n = count_rows(input_file);
     int d = count_cols(input_file);
     double** X = read_data_from_file(n,d,input_file);
+ */
+
+    /*
+     * Validate user input
+     */
+
+    if (validate_input_args(argc, argv)==1){
+        printf("Invalid Input!");
+        return 1;
+    } else {
+        printf("Good input");
+        return 0;
+    }
+
 
     /* check create_Wam */
 //    double** W = create_wam(n,d, X);
@@ -759,7 +820,6 @@ int main(){
 //    free_matrix(n,L_norm);
 
 
-    free_matrix(n,X);
 
     return 0;
 
