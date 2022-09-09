@@ -4,7 +4,7 @@ double** create_wam(int n, int d, double** X);
 double** create_identity_matrix(int n);
 double** create_ddg(int n, int d, double** X);
 double** create_ddg_inverse(int n, int d, double** X);
-double** create_Lnorm(int n, int d, double** X);
+double** create_lnorm(int n, int d, double** X);
 double* extract_diagonal(int n, double** A);
 int find_eigengap(int n, double** A);
 int compare_reversed_order(const void *z, const void *b);
@@ -28,7 +28,6 @@ void update_A_to_A_tag(int n, int i, int j, double**A_temp);
 int* find_k_max_indices(int n, int k, double** A);
 double** create_U (int n, int k, int* indices, double** V);
 void spk_helper(int k, int n, int d, double** X, char* input_file);
-void spk(int k, char* input_file);
 double** read_data_from_file(int rows, int cols, char* filePath);
 int count_cols(char* filePath);
 int count_rows(char* filePath);
@@ -39,5 +38,11 @@ int validateInputFile(char* filePath);
 int validate_input_args(int argc, char* argv[]);
 void print_double_vector(double* pointer, int cols);
 void printMatrix(double** mat, int rows, int cols);
+void spk_api(int k, char* input_file);
+double** create_wam_api(int n, int d, char* input_file);
+double** create_ddg_api(int n, int d, char* input_file);
+double** create_lnorm_api(int n, int d, char* input_file);
+double** create_jacobi_api(int n, int d, char* input_file);
+
 
 

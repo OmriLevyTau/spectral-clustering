@@ -10,7 +10,7 @@ double** create_wam(int n, int d, double** X);
 double** create_identity_matrix(int n);
 double** create_ddg(int n, int d, double** X);
 double** create_ddg_inverse(int n, int d, double** X);
-double** create_Lnorm(int n, int d, double** X);
+double** create_lnorm(int n, int d, double** X);
 double* extract_diagonal(int n, double** A);
 int find_eigengap(int n, double** A);
 int compare_reversed_order(const void *a, const void *b);
@@ -34,7 +34,6 @@ void update_A_to_A_tag(int n, int i, int j, double**A_temp);
 int* find_k_max_indices(int n, int k, double** A);
 double** create_U (int n, int k, int* indices, double** V);
 void spk_helper(int k, int n, int d, double** X, char* input_file);
-void spk(int k, char* input_file);
 double** read_data_from_file(int rows, int cols, char* filePath);
 int count_cols(char* filePath);
 int count_rows(char* filePath);
@@ -44,6 +43,11 @@ int validateInputFile(char* filePath);
 int validate_input_args(int argc, char* argv[]);
 void print_double_vector(double* pointer, int cols);
 void printMatrix(double** mat, int rows, int cols);
+void spk_api(int k, char* input_file);
+double** create_wam_api(int n, int d, char* input_file);
+double** create_ddg_api(int n, int d, char* input_file);
+double** create_lnorm_api(int n, int d, char* input_file);
+double** create_jacobi_api(int n, int d, char* input_file);
 
 
 
@@ -138,7 +142,7 @@ double** create_ddg_inverse(int n, int d, double** X){
 }
 
 /* creates Normalized Graph Laplacian */
-double** create_Lnorm(int n,int d, double** X){
+double** create_lnorm(int n, int d, double** X){
     int i,j;
     double** D = create_ddg(n,d,X);
     double** D_inverse = create_ddg_inverse(n, d, X);
@@ -305,7 +309,7 @@ double** jacobi_algorithm (int k, int n, int d, double** X){
     int* indices;
     double** U;
     double** T;
-    double** L_norm = create_Lnorm(n,d,X);
+    double** L_norm = create_lnorm(n,d,X);
     double*** VandA = create_jacobi_matrix(n, L_norm);
     double** V = VandA[0];
     double** A = VandA[1];
@@ -361,15 +365,6 @@ void spk_helper(int k, int n, int d, double** X, char* input_file){
     free_matrix(n, T);
 
 }
-
-void spk(int k, char* input_file){
-    int n = count_rows(input_file);
-    int d = count_cols(input_file);
-    double** X = read_data_from_file(n, d, input_file);
-    spk_helper(k, n, d, X, input_file);
-    free_matrix(n, X);
-}
-
 
 /*
  **************************
@@ -789,6 +784,74 @@ int validate_input_args(int argc, char* argv[]){
 }
 
 
+/*
+ ********************************
+ **** C\Python API Methods *****
+ ********************************
+ */
+
+
+void spk_api(int k, char* input_file){
+    /* given file path, calculates T and writes it to a temporary file */
+    int n = count_rows(input_file);
+    int d = count_cols(input_file);
+    double** X = read_data_from_file(n, d, input_file);
+    spk_helper(k, n, d, X, input_file);
+    free_matrix(n, X);
+}
+
+double** create_wam_api(int n, int d, char* input_file){
+    double** X = read_data_from_file(n, d, input_file);
+    double** W = create_wam(n, d ,X);
+    free_matrix(n, X);
+    return W;
+}
+
+double** create_ddg_api(int n, int d, char* input_file){
+    double** X = read_data_from_file(n, d, input_file);
+    double** D = create_ddg(n, d ,X);
+    free_matrix(n, X);
+    return D;
+}
+
+double** create_lnorm_api(int n, int d, char* input_file){
+    double** X = read_data_from_file(n, d, input_file);
+    double** lnorm = create_lnorm(n, d ,X);
+    free_matrix(n, X);
+    return lnorm;
+}
+
+double** create_jacobi_api(int n, int d, char* input_file){
+    /* given dimensions and file path, returns a matrix
+     * with first line eigenvalues and the rest is matrix V
+     * */
+    int i, j;
+    double** X = read_data_from_file(n, d, input_file);
+    double** lnorm = create_lnorm(n,d,X);
+    double*** VandA = create_jacobi_matrix(n, lnorm);
+    double** V = VandA[0];
+    double** A = VandA[1];
+    double* eigenvalues = extract_diagonal(n, A);
+    double** result = buildMatrix(n+1, n);
+
+    for (i=0; i<n; i++){
+        result[0][i] = eigenvalues[i];
+    }
+    for (i=1; i<n+1; i++){
+        for (j=0; j<n; j++){
+            result[i][j] = V[i][j];
+        }
+    }
+    free_matrix(n, X);
+    free(VandA);
+    free_matrix(n,V);
+    free_matrix(n,A);
+    free(eigenvalues);
+
+    return result;
+}
+
+
 
 /*
  ***********************
@@ -844,7 +907,7 @@ int main(int argc, char * argv[]){
             break;
         case 2:
             /*printf("lnorm \n");*/
-            result_matrix = create_Lnorm(n_input, d_input, X);
+            result_matrix = create_lnorm(n_input, d_input, X);
             break;
         case 3:
             /*printf("jacobi \n");*/
