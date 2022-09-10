@@ -65,6 +65,14 @@ static PyObject* create_jacobi_helper(int n, int d, char* input_file) {
     return py_jacobi;
 }
 
+static void spk_capi_helper(int k, char* input_file) {
+    /* calls spk_api from spkmeans.c, which given a file path
+     * calculates T and writes it to a temporary file
+     * */
+    spk_api(k, input_file);
+}
+
+
 /*
  * API Methods to be called from python
  */
@@ -131,6 +139,17 @@ static PyObject* jacobi_capi(PyObject *self, PyObject *args){
     return Py_BuildValue("O", create_jacobi_helper(n, d, input_file));
 }
 
+static void spk_capi(PyObject *self, PyObject *args){
+    int k;
+    char* input_file;
+    /* Parse Python Object into C variabels */
+    if (!PyArg_ParseTuple(args,"is", &k, &input_file)){
+        printf("An Error Has Occurred");
+    }
+    /* call fit_helper helper function, build python object from the return value */
+    spk_capi_helper(k, input_file);
+}
+
 
 /*
  * Configurations Methods
@@ -143,6 +162,7 @@ static PyMethodDef capiMethods[] = {
         {"ddg",         (PyCFunction)ddg_capi,      METH_VARARGS,       PyDoc_STR("creates ddg matrix")},
         {"lnorm",       (PyCFunction)lnorm_capi,    METH_VARARGS,       PyDoc_STR("creates lnorm matrix")},
         {"jacobi",      (PyCFunction)jacobi_capi,   METH_VARARGS,       PyDoc_STR("creates jacobi matrix")},
+        {"spk",         (PyCFunction)spk_capi,      METH_VARARGS,       PyDoc_STR("calculates T and writes it to a temp file")},
         {NULL,          NULL,                       0,                  NULL} /* Sentinel */
 };
 
