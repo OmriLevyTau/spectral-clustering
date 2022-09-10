@@ -9,6 +9,7 @@ setup(
     description="spkmeans capi",
     install_requires = ['invoke'],
     packages=find_packages(),
+    headers=['spkmeans.h'],
     license="GPL-2",
     classifiers=[
         'Development Status :: 3 - Alpha',
