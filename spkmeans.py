@@ -101,7 +101,7 @@ def main():
         print("Invalid Input!")
         sys.exit()
 
-    print(argv)
+    # print(argv)
 
     try:
         k, goal, input_file = argv[1], argv[2], argv[3]
@@ -109,22 +109,19 @@ def main():
         n,d = X.shape[0], X.shape[1]
 
         if goal=="spk":
-            # spkmeansmodule.spk(n, d, input_file)
-                # calculates T and writes to temp file
-            # T_path = os.path.join(os.getcwd(), "tmp_T" + "." + "txt")
-            # X = read_data(T_path)
-            # k = X.shape[1]
-                # if k==0 is re-calculated in jacobi_algorithm, now I got it in my hand again.
-            # initial_centroids, initial_centroids_indices = initialize_centroids(X.tolist(), k)
-            # write_output(initial_centroids.tolist(), "tmp_initial_centroids.txt")
-                # calculates initial centroids and write to a temp file
-            # initial_path = os.path.join(os.getcwd(), "tmp_initial_centroids" + "." + "txt")
-            # centroids = spkmeansmodule.fit(k, max_iter, eps, combined_path, initial_path)
-                # execute kmeans
-            # clear_tmp_files(["tmp_T.txt", "tmp_initial_centroids.txt"])
-            # print_output(centroids, initial_centroids_indices)
-            pass
+            spkmeansmodule.spk(k, input_file) # calculates T and writes to temp file
 
+            T_path = os.path.join(os.getcwd(), "tmp_T" + "." + "txt")
+            X = read_data(T_path)
+            k = X.shape[1] # if k==0 it is recalculated in jacobi_algorithm, now I got it in my hand again.
+
+            initial_centroids, initial_centroids_indices = initialize_centroids(X.tolist(), k) # here k!=0
+            write_output(initial_centroids.tolist(), "tmp_initial_centroids.txt") # writes initial centroids to a temp file
+
+            initial_centroids_path = os.path.join(os.getcwd(), "tmp_initial_centroids" + "." + "txt")
+            centroids = spkmeansmodule.fit(k, 100, 0.0001, T_path, initial_centroids_path) # execute kmeans
+            clear_tmp_files(["tmp_T.txt", "tmp_initial_centroids.txt"])
+            print_output(centroids, initial_centroids_indices)
         elif goal=="wam":
             W = spkmeansmodule.wam(n, d, input_file)
             print_matrix(W)
@@ -140,7 +137,6 @@ def main():
             print_matrix(jacobi)
         else:
             print("Invalid Input!") #should not happen
-
 
     except:
         print("An Error Has Occurred")
