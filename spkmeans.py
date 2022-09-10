@@ -3,8 +3,7 @@ import os.path
 import sys
 import numpy as np
 import pandas as pd
-# import spkmeansmodule
-# import mykmeanssp
+import spkmeansmodule
 from typing import List
 np.random.seed(0)
 
@@ -110,7 +109,7 @@ def main():
         n,d = X.shape[0], X.shape[1]
 
         if goal=="spk":
-            # spkmeansmodule.jacobi_algorithm (n, d, input_file)
+            # spkmeansmodule.spk(n, d, input_file)
                 # calculates T and writes to temp file
             # T_path = os.path.join(os.getcwd(), "tmp_T" + "." + "txt")
             # X = read_data(T_path)
@@ -120,29 +119,25 @@ def main():
             # write_output(initial_centroids.tolist(), "tmp_initial_centroids.txt")
                 # calculates initial centroids and write to a temp file
             # initial_path = os.path.join(os.getcwd(), "tmp_initial_centroids" + "." + "txt")
-            # centroids = mykmeanssp.fit(k, max_iter, eps, combined_path, initial_path)
+            # centroids = spkmeansmodule.fit(k, max_iter, eps, combined_path, initial_path)
                 # execute kmeans
             # clear_tmp_files(["tmp_T.txt", "tmp_initial_centroids.txt"])
             # print_output(centroids, initial_centroids_indices)
             pass
 
         elif goal=="wam":
-            # W = spkmeansmodule.create_wam_api(n, d, input_file)
-            # print_matrix(W)
-            pass
+            W = spkmeansmodule.wam(n, d, input_file)
+            print_matrix(W)
         elif goal=="ddg":
-            # D = spkmeansmodule.create_ddg_api(n, d, input_file)
-            # print_matrix(D)
+            D = spkmeansmodule.ddg(n, d, input_file)
+            print_matrix(D)
             pass
         elif goal=="lnorm":
-            # lnorm = spkmeansmodule.create_lnorm_api(n, d, input_file)
-            # print_matrix(lnorm)
-            pass
+            lnorm = spkmeansmodule.lnorm(n, d, input_file)
+            print_matrix(lnorm)
         elif goal=="jacobi":
-            # jacobi = spkmeansmodule.create_jacobi_api(n, d, input_file)
-            # (returns the result ready tp print!)
-            # print_matrix(jacobi)
-            pass
+            jacobi = spkmeansmodule.jacobi(n, d, input_file) # (returns the result ready tp print!)
+            print_matrix(jacobi)
         else:
             print("Invalid Input!") #should not happen
 
