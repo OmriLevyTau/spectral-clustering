@@ -43,6 +43,12 @@ double** create_wam_api(int n, int d, char* input_file);
 double** create_ddg_api(int n, int d, char* input_file);
 double** create_lnorm_api(int n, int d, char* input_file);
 double** create_jacobi_api(int n, int d, char* input_file);
+static PyObject* fit_capi(PyObject *self, PyObject *args);
+static PyObject* wam_capi(PyObject *self, PyObject *args);
+static PyObject* ddg_capi(PyObject *self, PyObject *args);
+static PyObject* lnorm_capi(PyObject *self, PyObject *args);
+static PyObject* jacobi_capi(PyObject *self, PyObject *args);
+static void spk_capi(PyObject *self, PyObject *args);
 
 
 

@@ -1,34 +1,20 @@
-# C - compile and run #
+# Python and C #
 
-## compile and run with user input ##
+## compile and run spkemans.c with user input ##
 
-general:
-1. `gcc -Wall .\spkmeans.c -o run `
-2. `.\run.exe ddg input `
-
-specific:
 1. `gcc -Wall .\spkmeans.c -o run `
 2. `.\run.exe jacobi C:\\Users\\Omri\\Desktop\\spectral-clustering\\test_files\\inputs\\sym_matrix\\sym_matrix_input_9.txt`
 3. `.\run.exe lnorm C:\\Users\\Omri\\Desktop\\spectral-clustering\\test_files\\inputs\\data_points\\input_0.txt`
 
 
-## connect two files - compile and run ##
-For invoking method foo() defined in spkmeans.c in test.c:
-1. set `#include "spkmeans.h"` in the top of test.c file
-2. run the program using IDE
-
-Alternatively, using the command line:
-1. compile both files:
-   1. `gcc -Wall -c .\spkmeans.c`
-   2. `gcc -Wall -c .\test.c`
-2. link files:
-   1. `gcc -o run spkmeans.o tests.o`
-3. execute file:
-   1. `./run.exe`
-
-
 # python - run #
-1. a
-2. b
-3. c
-4. 
+1. On Nova:
+   1. `python3 spkmeans.py 3 spk input_1.txt`
+2. On local machine:
+   1. `python spkmeans.py 3 spk input_1.txt`
+
+# Build and run all project #
+1. `python3 setup.py build_ext --inplace`
+   1. or: `python setup.py build_ext --inplace` locally
+2. `comp.sh`
+   1. or `gcc -Wall .\spkmeans.c -o spkmeans`

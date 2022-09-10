@@ -3,5 +3,5 @@ project(spectral_clustering C)
 
 set(CMAKE_C_STANDARD 90)
 
-add_executable(spectral_clustering spkmeans.c tests.c algTest.c tests.h)
+add_executable(spectral_clustering spkmeans.c)
 
