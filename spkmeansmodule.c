@@ -1,7 +1,7 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
-#include "kmeans.h"
 #include "spkmeans.h"
+#include "kmeans.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

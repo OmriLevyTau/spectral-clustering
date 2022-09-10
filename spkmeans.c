@@ -33,7 +33,7 @@ double** create_copy(int n, double** A);
 void update_A_to_A_tag(int n, int i, int j, double**A_temp);
 int* find_k_max_indices(int n, int k, double** A);
 double** create_U (int n, int k, int* indices, double** V);
-void spk_helper(int k, int n, int d, double** X, char* input_file);
+void spk_helper(int k, int n, int d, double** X);
 double** read_data_from_file(int rows, int cols, char* filePath);
 int count_cols(char* filePath);
 int count_rows(char* filePath);
@@ -210,10 +210,11 @@ int compare_reversed_order(const void *a, const void *b){
 /* finds the indices i,j , under assumption that K>1 */
 int* find_ij (int n, double** A){
     int a, b;
+    double cur_max;
     int* indices = calloc(2, sizeof(int));
     indices[0] = -1;
     indices[1] = -1;
-    double cur_max = -1 * DBL_MAX;
+    cur_max = -1 * DBL_MAX;
     for(a=0; a<n; a++){
         for(b=0; b<n; b++){
             if(a!=b){
@@ -359,7 +360,7 @@ double** create_T(int rows, int cols, double** U){
     return T;
 }
 
-void spk_helper(int k, int n, int d, double** X, char* input_file){
+void spk_helper(int k, int n, int d, double** X){
     double** T = jacobi_algorithm(k, n, d, X);
     write_output("tmp_T.txt", n, d, T);
     free_matrix(n, T);
@@ -796,7 +797,7 @@ void spk_api(int k, char* input_file){
     int n = count_rows(input_file);
     int d = count_cols(input_file);
     double** X = read_data_from_file(n, d, input_file);
-    spk_helper(k, n, d, X, input_file);
+    spk_helper(k, n, d, X);
     free_matrix(n, X);
 }
 
@@ -872,10 +873,14 @@ int main(int argc, char * argv[]){
     double** X = read_data_from_file(n,d,input_file);
      */
 
-    int required_command;
+    int required_command, n_input, d_input;
     char* input_file_path;
+    double* eigenvalues;
     double** result_matrix;
+    double** X;
+    double** A;
     double*** VandA;
+
     /*
     char* optional_commands[] = {"wam", "ddg", "lnorm", "jacobi"};
                                    0      1       2         3   */
@@ -891,9 +896,9 @@ int main(int argc, char * argv[]){
     /* Execute the right function */
     input_file_path = argv[2];
 
-    int n_input = count_rows(input_file_path);
-    int d_input = count_cols(input_file_path);
-    double** X = read_data_from_file(n_input, d_input, input_file_path);
+    n_input = count_rows(input_file_path);
+    d_input = count_cols(input_file_path);
+    X = read_data_from_file(n_input, d_input, input_file_path);
 
 
     switch (required_command) {
@@ -913,8 +918,8 @@ int main(int argc, char * argv[]){
             /*printf("jacobi \n");*/
             VandA = create_jacobi_matrix(n_input,X);
             result_matrix = VandA[0];
-            double** A = VandA[1];
-            double* eigenvalues = extract_diagonal(n_input, A);
+            A = VandA[1];
+            eigenvalues = extract_diagonal(n_input, A);
 
             print_double_vector(eigenvalues, n_input);
             printf("\n");

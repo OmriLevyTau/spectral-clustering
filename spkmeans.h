@@ -27,7 +27,7 @@ double** create_copy(int n, double** A);
 void update_A_to_A_tag(int n, int i, int j, double**A_temp);
 int* find_k_max_indices(int n, int k, double** A);
 double** create_U (int n, int k, int* indices, double** V);
-void spk_helper(int k, int n, int d, double** X, char* input_file);
+void spk_helper(int k, int n, int d, double** X);
 double** read_data_from_file(int rows, int cols, char* filePath);
 int count_cols(char* filePath);
 int count_rows(char* filePath);

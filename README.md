@@ -17,4 +17,5 @@
 1. `python3 setup.py build_ext --inplace`
    1. or: `python setup.py build_ext --inplace` locally
 2. `comp.sh`
-   1. or `gcc -Wall .\spkmeans.c -o spkmeans`
+   1. or `gcc -ansi -Wall -Wextra -Werror -pedantic-errors spkmeans.c -lm -o spkmeans
+      `
