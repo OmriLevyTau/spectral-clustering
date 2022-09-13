@@ -212,13 +212,14 @@ int* find_ij (int n, double** A){
     int a, b;
     double cur_max;
     int* indices = calloc(2, sizeof(int));
-
+    int flag=0;
     indices[0] = -1;
     indices[1] = -1;
     cur_max = -1 * DBL_MAX;
     for(a=0; a<n; a++){
         for(b=a; b<n; b++){
             if(a!=b){
+                if (A[a][b]!=0.0){flag=1;}
                 if(fabs(A[a][b]) > cur_max){
                     cur_max = fabs(A[a][b]);
                     indices[0] = a;
@@ -226,6 +227,10 @@ int* find_ij (int n, double** A){
                 }
             }
         }
+    }
+    if (flag==0){
+        indices[0] = -1;
+        indices[1] = -1;
     }
     return indices;
 }
@@ -273,10 +278,9 @@ double*** create_jacobi_matrix(int n, double** L_norm){
         i = indices[0];
         j = indices[1];
         free(temp_indices);
+        if (i==-1 && j==-1){break;}
         off_A = compute_off_diag(n,A);
-
         update_P(n, i, j, A, P_m);
-
         update_A_to_A_tag(n,i,j,A);
 
         off_A_tag = compute_off_diag(n,A);
