@@ -30,6 +30,7 @@ static PyObject* fit_helper(int k, int max_iter, double eps, char* tmp_combined_
     PyObject* py_centroids;
     centroids = K_means(k, max_iter, eps, tmp_combined_inputs, tmp_initial_centroids);
     py_centroids = double_matrix_to_pylist(centroids, k, count_cols(tmp_initial_centroids));
+    free_matrix(k, centroids);
     return py_centroids;
 }
 
@@ -38,6 +39,7 @@ static PyObject* create_wam_helper(int n, int d, char* input_file) {
     PyObject* py_W;
     W = create_wam_api(n, d, input_file); /* Call function from spkmeans.c*/
     py_W = double_matrix_to_pylist(W, n, n);
+    free_matrix(n, W);
     return py_W;
 }
 
@@ -46,6 +48,7 @@ static PyObject* create_ddg_helper(int n, int d, char* input_file) {
     PyObject* py_D;
     D = create_ddg_api(n, d, input_file); /* Call function from spkmeans.c*/
     py_D = double_matrix_to_pylist(D, n, n);
+    free_matrix(n, D);
     return py_D;
 }
 
@@ -54,6 +57,7 @@ static PyObject* create_lnorm_helper(int n, int d, char* input_file) {
     PyObject* py_lnorm;
     lnorm = create_lnorm_api(n, d, input_file); /* Call function from spkmeans.c*/
     py_lnorm = double_matrix_to_pylist(lnorm, n, n);
+    free_matrix(n, lnorm);
     return py_lnorm;
 }
 
@@ -62,14 +66,23 @@ static PyObject* create_jacobi_helper(int n, int d, char* input_file) {
     PyObject* py_jacobi;
     jacobi = create_jacobi_api(n, d, input_file); /* Call function from spkmeans.c*/
     py_jacobi = double_matrix_to_pylist(jacobi, n+1, n);
+    free_matrix(n, jacobi);
     return py_jacobi;
 }
 
-static void spk_capi_helper(int k, char* input_file) {
+static PyObject* spk_capi_helper(int k, char* input_file) {
     /* calls spk_api from spkmeans.c, which given a file path
      * calculates T and writes it to a temporary file
      * */
-    spk_api(k, input_file);
+    double** T;
+    int n, actual_k;
+    PyObject* py_T;
+    T = spk_api(k, input_file); /* Call function from spkmeans.c*/
+    n = count_rows("tmp_T.txt");
+    actual_k = count_cols("tmp_T.txt");
+    py_T = double_matrix_to_pylist(T, n, actual_k);
+    free_matrix(n, T);
+    return py_T;
 }
 
 
@@ -128,6 +141,7 @@ static PyObject* lnorm_capi(PyObject *self, PyObject *args){
 }
 
 static PyObject* jacobi_capi(PyObject *self, PyObject *args){
+
     int n;
     int d;
     char* input_file;
@@ -139,15 +153,17 @@ static PyObject* jacobi_capi(PyObject *self, PyObject *args){
     return Py_BuildValue("O", create_jacobi_helper(n, d, input_file));
 }
 
-static void spk_capi(PyObject *self, PyObject *args){
+static PyObject* spk_capi(PyObject *self, PyObject *args){
     int k;
     char* input_file;
     /* Parse Python Object into C variabels */
     if (!PyArg_ParseTuple(args,"is", &k, &input_file)){
-        printf("An Error Has Occurred");
+        return NULL;
     }
     /* call fit_helper helper function, build python object from the return value */
-    spk_capi_helper(k, input_file);
+    /*spk_capi_helper(k, input_file);*/
+    return Py_BuildValue("O", spk_capi_helper(k, input_file));
+
 }
 
 
@@ -168,13 +184,13 @@ static PyMethodDef capiMethods[] = {
 
 static struct PyModuleDef moduledef = {
         PyModuleDef_HEAD_INIT,
-        "spkmeansmodule",
+        "myspkmeansmodule",
         NULL,
         -1,
         capiMethods
 };
 
-PyMODINIT_FUNC PyInit_spkmeansmodule(void) {
+PyMODINIT_FUNC PyInit_myspkmeansmodule(void) {
     PyObject *m;
     m = PyModule_Create(&moduledef);
     if (!m) {

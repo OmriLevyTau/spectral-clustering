@@ -7,9 +7,9 @@ setup(
     author="Idan and Omri",
     author_email="omrilevy@mail.tau.ac.il",
     description="spkmeans capi",
-    install_requires = ['invoke'],
+    install_requires = ['invoke', 'pandas', 'numpy', 'sys', 'os'],
     packages=find_packages(),
-    headers=['spkmeans.h'],
+    headers=['spkmeans.h', 'kmeans.h'],
     license="GPL-2",
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -20,8 +20,8 @@ setup(
     ],
     ext_modules=[
         Extension(
-            'spkmeansmodule',
-            ['spkmeansmodule.c'],
+            'myspkmeansmodule',
+            ['spkmeansmodule.c', 'kmeans.c', 'spkmeans.c',],
         ),
     ]
 )

@@ -3,7 +3,7 @@ import os.path
 import sys
 import numpy as np
 import pandas as pd
-import spkmeansmodule
+import myspkmeansmodule as spkmeansmodule
 from typing import List
 np.random.seed(0)
 
@@ -28,13 +28,12 @@ def initialize_centroids(S, k):
     return centroids, indices
 
 
-def read_data(name: str):
+def read_data(name):
     res = pd.read_csv(name, sep=",", header=None)
-    res.sort_values(by=0, inplace=True)
-    return res.drop(0, axis=1).to_numpy()
+    return res.to_numpy()
 
 
-def validate_input_args(argv: List[str]) -> bool:
+def validate_input_args(argv):
     n = len(argv)
 
     if (n != 4):
@@ -53,7 +52,7 @@ def validate_input_args(argv: List[str]) -> bool:
     except:
         return True
 
-    if k != int(k) or k <= 0:
+    if k != int(k) or k < 0:
         return True
 
     if goal not in goals_list:
@@ -62,7 +61,7 @@ def validate_input_args(argv: List[str]) -> bool:
     return False
 
 
-def write_output(input_text, output_filename: str):
+def write_output(input_text, output_filename):
     with open(output_filename, "w") as file:
         for line in input_text:
             line_data = make_string(line)
@@ -70,7 +69,7 @@ def write_output(input_text, output_filename: str):
             file.write("\n")
 
 
-def make_string(centroid: List['float']):
+def make_string(centroid):
     st = ""
     for cell in centroid:
         tmp = "%.4f" % round(cell, 4)
@@ -84,42 +83,48 @@ def clear_tmp_files(files_list):
 
 def print_output(centroids,initial_centroids_indices):
     st = ""
-    for centroid in centroids:
-        st += make_string(centroid) + "\n";
+    for i in range(len(centroids)-1):
+        st += make_string(centroids[i]) + "\n";
+    st += make_string(centroids[-1]);
+
     result = ','.join(str(ind) for ind in initial_centroids_indices)
     print(result + "\n" + st);
 
+
 def print_matrix(matrix):
     st = ""
-    for row in matrix:
-        st += make_string(row) + "\n";
+    for i in range(len(matrix)-1):
+        st += make_string(matrix[i]) + "\n";
+    st += make_string(matrix[-1])
     print(st);
+
 
 def main():
     argv = sys.argv
     if validate_input_args(argv):
         print("Invalid Input!")
-        sys.exit()
-
-    # print(argv)
+        return
 
     try:
         k, goal, input_file = argv[1], argv[2], argv[3]
         X = read_data(input_file)
         n,d = X.shape[0], X.shape[1]
+        k = int(k)
 
         if goal=="spk":
+            if k>=n:
+                print("Invalid Input!")
+                return
+
             spkmeansmodule.spk(k, input_file) # calculates T and writes to temp file
 
             T_path = os.path.join(os.getcwd(), "tmp_T" + "." + "txt")
-            X = read_data(T_path)
-            k = X.shape[1] # if k==0 it is recalculated in jacobi_algorithm, now I got it in my hand again.
-
+            X = read_data(T_path);
+            k = X.shape[1] # if k==0 it is recalculated in jacobi_algorithm.
             initial_centroids, initial_centroids_indices = initialize_centroids(X.tolist(), k) # here k!=0
             write_output(initial_centroids.tolist(), "tmp_initial_centroids.txt") # writes initial centroids to a temp file
-
             initial_centroids_path = os.path.join(os.getcwd(), "tmp_initial_centroids" + "." + "txt")
-            centroids = spkmeansmodule.fit(k, 100, 0.0001, T_path, initial_centroids_path) # execute kmeans
+            centroids = spkmeansmodule.fit(k, 300, 0, T_path, initial_centroids_path) # execute kmeans
             clear_tmp_files(["tmp_T.txt", "tmp_initial_centroids.txt"])
             print_output(centroids, initial_centroids_indices)
         elif goal=="wam":
@@ -133,15 +138,15 @@ def main():
             lnorm = spkmeansmodule.lnorm(n, d, input_file)
             print_matrix(lnorm)
         elif goal=="jacobi":
-            jacobi = spkmeansmodule.jacobi(n, d, input_file) # (returns the result ready tp print!)
-            print_matrix(jacobi)
+            J = spkmeansmodule.jacobi(n, d, input_file) # returns the result ready to print
+            print_matrix(J)
         else:
             print("Invalid Input!") #should not happen
 
     except:
         print("An Error Has Occurred")
 
-    clear_tmp_files()
+
 
 if __name__ == "__main__":
     main()

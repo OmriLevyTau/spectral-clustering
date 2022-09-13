@@ -31,24 +31,22 @@ void spk_helper(int k, int n, int d, double** X);
 double** read_data_from_file(int rows, int cols, char* filePath);
 int count_cols(char* filePath);
 int count_rows(char* filePath);
-//double*** create_jacobi_TEST(int n, double** L_norm);
 double sign(double x);
 FILE* write_output(char* output_filename, int rows, int cols,double** Matrix);
 int validateInputFile(char* filePath);
 int validate_input_args(int argc, char* argv[]);
 void print_double_vector(double* pointer, int cols);
 void printMatrix(double** mat, int rows, int cols);
-void spk_api(int k, char* input_file);
+double** spk_api(int k, char* input_file);
 double** create_wam_api(int n, int d, char* input_file);
 double** create_ddg_api(int n, int d, char* input_file);
 double** create_lnorm_api(int n, int d, char* input_file);
 double** create_jacobi_api(int n, int d, char* input_file);
-static PyObject* fit_capi(PyObject *self, PyObject *args);
-static PyObject* wam_capi(PyObject *self, PyObject *args);
-static PyObject* ddg_capi(PyObject *self, PyObject *args);
-static PyObject* lnorm_capi(PyObject *self, PyObject *args);
-static PyObject* jacobi_capi(PyObject *self, PyObject *args);
-static void spk_capi(PyObject *self, PyObject *args);
 
+double** createMatrix(int rows, int cols, char* filePath);
+double* sub_vectors(const double *A, const double *B, int n);
+double* add_vectors(const double *A, const double *B, int n);
+double squared_dot_product(const double *A, const double *B, int n);
+double** K_means(int K, int max_iter, double epsilon, char* tmp_combined_inputs, char* tmp_initial_centroids);
 
 

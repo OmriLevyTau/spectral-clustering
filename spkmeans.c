@@ -19,7 +19,7 @@ void update_P (int n, int i, int j, double** A, double** P_prev);
 double*** create_jacobi_matrix (int n, double** L_norm);
 double** jacobi_algorithm (int k, int n, int d, double** X);
 double** create_T(int rows, int cols, double** U);
-void print_error_and_exit();
+void error_and_exit();
 double** buildMatrix(int rows, int cols);
 double sum_array(int n, double* arr);
 double** matrix_mult(int n, double **A, double **B);
@@ -33,7 +33,7 @@ double** create_copy(int n, double** A);
 void update_A_to_A_tag(int n, int i, int j, double**A_temp);
 int* find_k_max_indices(int n, int k, double** A);
 double** create_U (int n, int k, int* indices, double** V);
-void spk_helper(int k, int n, int d, double** X);
+double** spk_helper(int k, int n, int d, double** X);
 double** read_data_from_file(int rows, int cols, char* filePath);
 int count_cols(char* filePath);
 int count_rows(char* filePath);
@@ -43,7 +43,7 @@ int validateInputFile(char* filePath);
 int validate_input_args(int argc, char* argv[]);
 void print_double_vector(double* pointer, int cols);
 void printMatrix(double** mat, int rows, int cols);
-void spk_api(int k, char* input_file);
+double** spk_api(int k, char* input_file);
 double** create_wam_api(int n, int d, char* input_file);
 double** create_ddg_api(int n, int d, char* input_file);
 double** create_lnorm_api(int n, int d, char* input_file);
@@ -57,12 +57,12 @@ double** buildMatrix(int rows, int cols){
     int i;
     double **a = calloc(rows, sizeof(double*));
     if (a==NULL){
-        print_error_and_exit();
+        error_and_exit();
     }
     for (i=0;i<rows;i++){
-        a[i] = calloc(cols, sizeof(double)+8);
+        a[i] = calloc(cols, sizeof(double)+16);
         if (a[i]==NULL){
-            print_error_and_exit();
+            error_and_exit();
         }
     }
     return a;
@@ -212,11 +212,12 @@ int* find_ij (int n, double** A){
     int a, b;
     double cur_max;
     int* indices = calloc(2, sizeof(int));
+
     indices[0] = -1;
     indices[1] = -1;
     cur_max = -1 * DBL_MAX;
     for(a=0; a<n; a++){
-        for(b=0; b<n; b++){
+        for(b=a; b<n; b++){
             if(a!=b){
                 if(fabs(A[a][b]) > cur_max){
                     cur_max = fabs(A[a][b]);
@@ -250,54 +251,49 @@ void update_P (int n, int i, int j, double** A, double** P_prev){
 
 
 /* creates V (eigenvectors as columns) and A' (diagonal, eigenvalues of original A)
-
- V = I (create_identity);
- A = return copy of L_norm
- initialize temp(create_identity);
- for(int m=0; m<100; m++){
-    1. compute i,j
-    2. P_m = update_P (updated P_zona)
-    3. compute off(A)
-    4. set A=A' (call update_A_to_A_tag)
-    6. V =V*P_m (matrix_mult)
-    7. if(off(A)^2-off(A')^2<=eps){ break;}
- }
- now V holds eigenvectors and A holds eigenvalues
  return V and A
  * */
-
- double*** create_jacobi_matrix(int n, double** L_norm){
-     double** temp_V;
-     int* temp_indices;
-     double*** VandA = calloc(2, sizeof(double**));
-     double** V = create_identity_matrix(n);
-     double** A = create_copy(n,L_norm);
-     double** P_m = create_identity_matrix(n);
-     double off_A, off_A_tag;
-     double epsilon = 1.0 / 100000.0;
-
+double*** create_jacobi_matrix(int n, double** L_norm){
+    double** temp_V;
+    int* temp_indices;
+    double*** VandA = calloc(2, sizeof(double**));
+    double** V = create_identity_matrix(n);
+    double** A = create_copy(n,L_norm);
+    double** P_m = create_identity_matrix(n);
+    double off_A, off_A_tag;
+    double epsilon = 0.00001;
     int* indices;
-     int l, i, j;
-     for(l=0; l<100; l++){
-         indices = find_ij(n,A);
-         temp_indices = indices;
-         i = indices[0];
-         j = indices[1];
-         free(temp_indices);
-         off_A = compute_off_diag(n,A);
-         update_P(n, i, j, A, P_m);
-         update_A_to_A_tag(n,i,j,A);
-         off_A_tag = compute_off_diag(n,A);
-         temp_V = V;
-         V = matrix_mult(n,V,P_m);
-         free_matrix(n,temp_V);
-         if((off_A-off_A_tag)<=epsilon){ break;}
-     }
-     VandA[0] = V;
-     VandA[1] = A;
-     free_matrix(n,P_m);
-     return VandA;
- }
+    int l, i, j;
+
+    for(l=0; l<100; l++){
+
+        indices = find_ij(n,A);
+
+        temp_indices = indices;
+        i = indices[0];
+        j = indices[1];
+        free(temp_indices);
+        off_A = compute_off_diag(n,A);
+
+        update_P(n, i, j, A, P_m);
+
+        update_A_to_A_tag(n,i,j,A);
+
+        off_A_tag = compute_off_diag(n,A);
+
+        temp_V = V;
+        V = matrix_mult(n,V,P_m);
+
+        free_matrix(n,temp_V);
+        if((off_A-off_A_tag)<=epsilon){ break;}
+
+    }
+
+    VandA[0] = V;
+    VandA[1] = A;
+    free_matrix(n,P_m);
+    return VandA;
+}
 
 /*
  * run jacobi algorithm
@@ -308,35 +304,31 @@ void update_P (int n, int i, int j, double** A, double** P_prev){
  * */
 double** jacobi_algorithm (int k, int n, int d, double** X){
     int* indices;
+    /*double* eigen;*/
     double** U;
     double** T;
     double** L_norm = create_lnorm(n,d,X);
     double*** VandA = create_jacobi_matrix(n, L_norm);
     double** V = VandA[0];
     double** A = VandA[1];
-    /*
-    printf("V: \n");
-    printMatrix(V, n, n);
-    printf("\n");
-    printf("Eigen: \n");
-    double* eigen = extract_diagonal(n, A);
-    print_double_vector(eigen, n);
-    printf("\n");
-     */
 
     if(k==0){
         k = find_eigengap(n,A);
     }
-    indices = find_k_max_indices(n,k,A);
-    U = create_U(n,k,indices,V);
 
-    free(VandA);
+    indices = find_k_max_indices(n,k,A);
+
+    U = create_U(n,k,indices,V);
     T = create_T(n,k,U);
+
     free_matrix(n,V);
     free_matrix(n,A);
     free_matrix(n,U);
     free_matrix(n,L_norm);
     free(indices);
+    free(VandA);
+
+    write_output("tmp_T.txt", n, k, T);
 
     return T;
 }
@@ -354,18 +346,22 @@ double** create_T(int rows, int cols, double** U){
         }
         sqrt_row_sum = sqrt(cur_row_sum);
         for(j=0;j<cols;j++){
-            T[i][j] = U[i][j] / sqrt_row_sum;
+            if (sqrt_row_sum>0.0){
+                T[i][j] = U[i][j] / sqrt_row_sum;
+            } else {
+                T[i][j] = 0.0;
+            }
         }
     }
     return T;
 }
 
-void spk_helper(int k, int n, int d, double** X){
+double** spk_helper(int k, int n, int d, double** X){
     double** T = jacobi_algorithm(k, n, d, X);
-    write_output("tmp_T.txt", n, d, T);
-    free_matrix(n, T);
+    return T;
 
 }
+
 
 /*
  **************************
@@ -373,7 +369,7 @@ void spk_helper(int k, int n, int d, double** X){
  **************************
  * */
 
-void print_error_and_exit(){
+void error_and_exit(){
     printf("An Error Has Occurred");
     exit(1);
 }
@@ -420,7 +416,7 @@ double** matrix_mult(int n, double **A, double **B){
 /*
  * free from memory
  */
-int free_matrix( int rows, double** pointer){
+int free_matrix(int rows, double** pointer){
     int i;
     for (i = 0; i<rows; i++){
         if (pointer[i]!=NULL){
@@ -429,7 +425,9 @@ int free_matrix( int rows, double** pointer){
             return 1;
         }
     }
-    free(pointer);
+    if(pointer!=NULL){
+        free(pointer);
+    }
     return 0;
 }
 
@@ -498,8 +496,7 @@ void reset_matrix(int n, double**A){
 }
 
 /*
- * updates A_temp by formula (inplace)
-  for testing - A_temp' is always symmetric
+ * updates A_temp by formula (inplace) for testing - A_temp' is always symmetric
  * */
 void update_A_to_A_tag(int n, int i, int j, double**A){
     double** A_temp = create_copy(n, A);
@@ -545,9 +542,11 @@ void update_A_to_A_tag(int n, int i, int j, double**A){
 int* find_k_max_indices(int n, int k, double** A){
     int* k_indices= calloc(k, sizeof(int));
     double* all_eigenvals = extract_diagonal(n,A);
-    int i,j, cnt=0;
-    double max_eigenval;
-    int max_ind;
+    int i = 0;
+    int j = 0;
+    int cnt = 0;
+    double max_eigenval= DBL_MIN;
+    int max_ind = -1;
     for(i=0;i<k;i++){
         max_eigenval= DBL_MIN;
         max_ind = -1;
@@ -561,6 +560,7 @@ int* find_k_max_indices(int n, int k, double** A){
         cnt++;
         all_eigenvals[max_ind] = DBL_MIN;
     }
+    /*printf("find_k_max_indices - 3 \n");*/
     free(all_eigenvals);
     return k_indices;
 }
@@ -606,7 +606,7 @@ int count_cols(char* filePath){
     FILE *fp =  fopen(filePath,"r");
 
     if (fp==NULL){
-        print_error_and_exit();
+        error_and_exit();
     }
 
     for (c= getc(fp); c!='\n'; c= getc(fp)){
@@ -616,7 +616,7 @@ int count_cols(char* filePath){
     }
 
     if(fclose(fp)!=0){
-        print_error_and_exit();
+        error_and_exit();
     }
 
     if (counter==0){
@@ -636,7 +636,7 @@ int count_rows(char* filePath){
     FILE *fp =  fopen(filePath,"r");
 
     if (fp==NULL){
-        print_error_and_exit();
+        error_and_exit();
     }
     for (c= getc(fp); c!=EOF; c= getc(fp)){
         if (c=='\n'){
@@ -644,7 +644,7 @@ int count_rows(char* filePath){
         }
     }
     if(fclose(fp)!=0){
-        print_error_and_exit();
+        error_and_exit();
     }
     return counter;
 }
@@ -663,7 +663,7 @@ double** read_data_from_file(int rows, int cols, char* filePath){
 
     line = calloc(lineSize, sizeof(char ));
     if(line == NULL){
-        print_error_and_exit();
+        error_and_exit();
     }
 
     matrix = buildMatrix(rows,cols);
@@ -671,7 +671,7 @@ double** read_data_from_file(int rows, int cols, char* filePath){
     fp = fopen(filePath,"r");
 
     if (fp==NULL){
-        print_error_and_exit();
+        error_and_exit();
     }
 
     /* Reads each line as a string*/
@@ -687,7 +687,7 @@ double** read_data_from_file(int rows, int cols, char* filePath){
         j=0;
     }
     if(fclose(fp)!=0){
-        print_error_and_exit();
+        error_and_exit();
     }
     free(line);
 
@@ -696,12 +696,12 @@ double** read_data_from_file(int rows, int cols, char* filePath){
 
 FILE* write_output(char* output_filename, int rows, int cols,double** Matrix){
     int r,c;
-    char tmp_str[180];
+    char tmp_str[1000];
     FILE* fp;
     fp = fopen(output_filename, "w");
 
     if (fp==NULL){
-        print_error_and_exit();
+        error_and_exit();
     }
     for (r=0;r<rows;r++){
         c = 0;
@@ -715,24 +715,27 @@ FILE* write_output(char* output_filename, int rows, int cols,double** Matrix){
         fputs("\n", fp);
     }
     if(fclose(fp)!=0){
-        print_error_and_exit();
+        error_and_exit();
     }
     return fp;
 }
 
 void print_double_vector(double* pointer, int cols){
     int i;
-    for (i=0; i<cols;i++){
-        printf("  %.4f",pointer[i]);
+    for (i=0; i<cols-1;i++){
+        printf("%.4f,",pointer[i]);
     }
+    printf("%.4f",pointer[cols-1]);
+
 }
 
 void printMatrix(double** mat, int rows, int cols){
     int i,j;
     for (i=0; i<rows;i++){
-        for (j=0;j<cols;j++){
-            printf("   %.4f",mat[i][j]);
+        for (j=0;j<cols-1;j++){
+            printf("%.4f,",mat[i][j]);
         }
+        printf("%.4f",mat[i][cols-1]);
         printf("\n");
     }
 }
@@ -763,7 +766,7 @@ int validate_input_args(int argc, char* argv[]){
     int i;
     char* required_command;
     /* char* input_file_path; */
-    char* optional_commands[] = {"wam", "ddg", "lnorm", "jacobi"};
+    char* optional_commands[] = {"wam", "ddg", "lnorm", "jacobi",};
 
     if (argc!=3){ return -1; }
 
@@ -789,16 +792,19 @@ int validate_input_args(int argc, char* argv[]){
  ********************************
  **** C\Python API Methods *****
  ********************************
+
+ note: methods to be called from spkmeansmodule.c
  */
 
 
-void spk_api(int k, char* input_file){
+double** spk_api(int k, char* input_file){
     /* given file path, calculates T and writes it to a temporary file */
     int n = count_rows(input_file);
     int d = count_cols(input_file);
     double** X = read_data_from_file(n, d, input_file);
-    spk_helper(k, n, d, X);
+    double** T = spk_helper(k, n, d, X);
     free_matrix(n, X);
+    return T;
 }
 
 double** create_wam_api(int n, int d, char* input_file){
@@ -827,20 +833,28 @@ double** create_jacobi_api(int n, int d, char* input_file){
      * with first line eigenvalues and the rest is matrix V
      * */
     int i, j;
-    double** X = read_data_from_file(n, d, input_file);
-    double** lnorm = create_lnorm(n,d,X);
-    double*** VandA = create_jacobi_matrix(n, lnorm);
-    double** V = VandA[0];
-    double** A = VandA[1];
-    double* eigenvalues = extract_diagonal(n, A);
-    double** result = buildMatrix(n+1, n);
+    double** X;
+    double** V;
+    double** A;
+    double** result;
+    double*** VandA;
+    double* eigenvalues;
+    X = read_data_from_file(n, d, input_file);
+
+    VandA = create_jacobi_matrix(n, X);
+
+    V = VandA[0];
+    A = VandA[1];
+    eigenvalues = extract_diagonal(n, A);
+
+    result = buildMatrix(n+1, n);
 
     for (i=0; i<n; i++){
         result[0][i] = eigenvalues[i];
     }
     for (i=1; i<n+1; i++){
         for (j=0; j<n; j++){
-            result[i][j] = V[i][j];
+            result[i][j] = V[i-1][j];
         }
     }
     free_matrix(n, X);
@@ -861,18 +875,6 @@ double** create_jacobi_api(int n, int d, char* input_file){
  */
 
 int main(int argc, char * argv[]){
-
-    /* Idan - test spk memory
-    char* input_file = "jacobi_1.txt";
-    int k = 3;
-    spk(k, input_file);
-
-    char* input_file = "jacobi_1.txt";
-    int n = count_rows(input_file);
-    int d = count_cols(input_file);
-    double** X = read_data_from_file(n,d,input_file);
-     */
-
     int required_command, n_input, d_input;
     char* input_file_path;
     double* eigenvalues;
@@ -887,7 +889,6 @@ int main(int argc, char * argv[]){
 
     /* Validate user input */
     required_command = validate_input_args(argc, argv);
-
     if (required_command<0){
         printf("Invalid Input!");
         return 1;
@@ -899,7 +900,6 @@ int main(int argc, char * argv[]){
     n_input = count_rows(input_file_path);
     d_input = count_cols(input_file_path);
     X = read_data_from_file(n_input, d_input, input_file_path);
-
 
     switch (required_command) {
         case 0:
@@ -930,13 +930,14 @@ int main(int argc, char * argv[]){
             break;
         default:
             printf("Invalid Input!"); /* should not happen, for clean compilation*/
+            return 1;
             break;
     }
 
     printMatrix(result_matrix, n_input, n_input);
 
     free_matrix(n_input, result_matrix);
-
+    free_matrix(n_input,X);
     return 0;
 
 }
